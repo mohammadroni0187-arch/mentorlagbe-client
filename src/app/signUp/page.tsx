@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { authClient, signUp } from "@/lib/auth-client";
+import { signIn, signUp } from "@/lib/auth-client";
 
 type FormErrors = Partial<
   Record<"name" | "email" | "password" | "confirmPassword" | "form", string>
@@ -23,19 +23,41 @@ type FormErrors = Partial<
 const inputClass =
   "border-indigo-200 bg-white/70 focus-visible:border-indigo-500 focus-visible:ring-indigo-500/30 dark:border-indigo-900 dark:bg-slate-900/60";
 
+const GoogleIcon = () => (
+  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+    <path
+      fill="#4285F4"
+      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"
+    />
+    <path
+      fill="#34A853"
+      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"
+    />
+    <path
+      fill="#FBBC05"
+      d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z"
+    />
+    <path
+      fill="#EA4335"
+      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"
+    />
+  </svg>
+);
+
 const SignUpPage = () => {
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
-    role:"student",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
+  const busy = loading || googleLoading;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -66,12 +88,12 @@ const SignUpPage = () => {
     setLoading(true);
     try {
       const { data, error } = await signUp.email({
-              name: form.name.trim(),
-              email: form.email,
-              password: form.password,
-              role: form.role,
-              callbackURL: "/dashboard",
-            });
+        name: form.name.trim(),
+        email: form.email,
+        password: form.password,
+        callbackURL: "/dashboard",
+      });
+
       if (error) {
         setErrors({ form: error.message ?? "Sign up fail hoyeche" });
         return;
@@ -84,10 +106,26 @@ const SignUpPage = () => {
     } finally {
       setLoading(false);
     }
-    const { data: tokenData, error } = await authClient.token();
+  };
 
-    console.log("JWT Token:", tokenData);
-    console.log("Token Error:", error);
+  const handleGoogle = async () => {
+    setGoogleLoading(true);
+    try {
+      const { error } = await signIn.social({
+        provider: "google",
+        callbackURL: "/dashboard",
+      });
+
+      if (error) {
+        setErrors({ form: error.message ?? "Google sign up fail hoyeche" });
+        setGoogleLoading(false);
+      }
+      // success hole browser Google-e redirect hobe, tai loading on thakbe
+    } catch (err) {
+      console.error("Google Signup Error:", err);
+      setErrors({ form: "Google sign up e somossa hoyeche, abar try korun" });
+      setGoogleLoading(false);
+    }
   };
 
   return (
@@ -117,7 +155,7 @@ const SignUpPage = () => {
                 value={form.name}
                 onChange={handleChange}
                 aria-invalid={!!errors.name}
-                disabled={loading}
+                disabled={busy}
                 className={inputClass}
               />
               {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
@@ -136,7 +174,7 @@ const SignUpPage = () => {
                 value={form.email}
                 onChange={handleChange}
                 aria-invalid={!!errors.email}
-                disabled={loading}
+                disabled={busy}
                 className={inputClass}
               />
               {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
@@ -156,7 +194,7 @@ const SignUpPage = () => {
                   value={form.password}
                   onChange={handleChange}
                   aria-invalid={!!errors.password}
-                  disabled={loading}
+                  disabled={busy}
                   className={`${inputClass} pr-10`}
                 />
                 <button
@@ -185,7 +223,7 @@ const SignUpPage = () => {
                   value={form.confirmPassword}
                   onChange={handleChange}
                   aria-invalid={!!errors.confirmPassword}
-                  disabled={loading}
+                  disabled={busy}
                   className={`${inputClass} pr-10`}
                 />
                 <button
@@ -202,31 +240,6 @@ const SignUpPage = () => {
               )}
             </div>
 
-              {/* Account Role */}
-              <div className="grid gap-2">
-                <Label htmlFor="role" className="text-indigo-900 dark:text-indigo-200">
-                  I want to join as
-                </Label>
-
-                <select
-                  id="role"
-                  name="role"
-                  value={form.role}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      role: e.target.value,
-                    }))
-                  }
-                  disabled={loading}
-                  className={`${inputClass} h-10 w-full rounded-md border px-3 text-sm`}
-                >
-                  <option value="student">Student</option>
-                  <option value="tutor">Tutor</option>
-                </select>
-              </div>
-
-
             {errors.form && (
               <p className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600 dark:border-red-900 dark:bg-red-950/40 dark:text-red-400">
                 {errors.form}
@@ -237,7 +250,7 @@ const SignUpPage = () => {
           <CardFooter className="mt-6 flex-col gap-3">
             <Button
               type="submit"
-              disabled={loading}
+              disabled={busy}
               className="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-md shadow-purple-500/30 transition-all hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 hover:shadow-lg"
             >
               {loading ? (
@@ -249,13 +262,35 @@ const SignUpPage = () => {
                 "Sign Up"
               )}
             </Button>
+
+            <div className="flex w-full items-center gap-3">
+              <span className="h-px flex-1 bg-indigo-200 dark:bg-indigo-900" />
+              <span className="text-xs uppercase text-muted-foreground">or</span>
+              <span className="h-px flex-1 bg-indigo-200 dark:bg-indigo-900" />
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleGoogle}
+              disabled={busy}
+              className="w-full border-indigo-200 hover:bg-indigo-50 dark:border-indigo-900 dark:hover:bg-indigo-950"
+            >
+              {googleLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <GoogleIcon />
+              )}
+              Sign up with Google
+            </Button>
+
             <p className="text-sm text-muted-foreground">
               Already have an account?{" "}
               <Link
-                href="/login"
+                href="/signIn"
                 className="font-medium text-indigo-600 underline-offset-4 hover:text-purple-600 hover:underline"
               >
-                Login
+                SignIn
               </Link>
             </p>
           </CardFooter>
