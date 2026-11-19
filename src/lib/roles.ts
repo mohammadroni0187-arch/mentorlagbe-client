@@ -5,7 +5,13 @@ export type Role = (typeof ROLES)[number];
 export const ROUTES = {
   home: "/",
   signIn: "/signIn",
+  signUp: "/signUp",
   dashboard: "/dashboard",
+  profile: "/dashboard/profile",
+  tuitions: "/tuitions",
+  pricing: "/pricing",
+  howItWorks: "/#how-it-works",
+  about: "/about",
 } as const;
 
 export const ROLE_DASHBOARD: Record<Role, string> = {

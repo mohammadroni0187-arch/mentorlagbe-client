@@ -1,0 +1,260 @@
+
+import Link from "next/link";
+import {
+  ArrowRight,
+  BadgeCheck,
+  BookOpen,
+  CheckCircle2,
+  MessageSquare,
+  Search,
+  ShieldCheck,
+  Users,
+  Wallet,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
+const gradientBtn =
+  "inline-flex items-center justify-center rounded-md bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-6 py-3 text-sm font-medium text-white shadow-md shadow-purple-500/30 transition-all hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 hover:shadow-lg";
+
+const outlineBtn =
+  "inline-flex items-center justify-center rounded-md border border-indigo-200 bg-white/70 px-6 py-3 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-50";
+
+const STATS = [
+  { value: "500+", label: "Verified tutors" },
+  { value: "2,000+", label: "Happy students" },
+  { value: "50+", label: "Subjects" },
+  { value: "4.8/5", label: "Average rating" },
+];
+
+type Feature = {
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  accent: string;
+};
+
+const FEATURES: Feature[] = [
+  {
+    title: "Verified Tutors",
+    description:
+      "Every tutor profile is reviewed so you can learn with confidence.",
+    icon: BadgeCheck,
+    accent: "bg-indigo-100 text-indigo-600",
+  },
+  {
+    title: "Easy Search",
+    description:
+      "Filter by subject, class, location and budget to find the right match fast.",
+    icon: Search,
+    accent: "bg-purple-100 text-purple-600",
+  },
+  {
+    title: "Secure Payments",
+    description:
+      "Pay safely through the platform and keep a clear payment history.",
+    icon: Wallet,
+    accent: "bg-pink-100 text-pink-600",
+  },
+  {
+    title: "Direct Communication",
+    description:
+      "Talk to tutors and agree on schedules before you start.",
+    icon: MessageSquare,
+    accent: "bg-sky-100 text-sky-600",
+  },
+];
+
+const STEPS = [
+  {
+    title: "Create your account",
+    description:
+      "Sign up as a student or a tutor in less than a minute.",
+  },
+  {
+    title: "Find or post a tuition",
+    description:
+      "Browse tutors and tuitions, or post what you are looking for.",
+  },
+  {
+    title: "Connect and learn",
+    description:
+      "Apply, get accepted, and start learning with the right person.",
+  },
+];
+
+export default function Home() {
+  return (
+    <>
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-24 left-1/2 h-72 w-[40rem] -translate-x-1/2 rounded-full bg-gradient-to-r from-indigo-300/40 via-purple-300/40 to-pink-300/40 blur-3xl"
+        />
+
+        <div className="relative mx-auto max-w-6xl px-4 py-20 text-center md:py-28">
+          <span className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white/70 px-3 py-1 text-xs font-medium text-indigo-700">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            Trusted by students and tutors
+          </span>
+
+          <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold tracking-tight text-slate-900 md:text-6xl">
+            Find the{" "}
+            <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              perfect tutor
+            </span>{" "}
+            for your goals
+          </h1>
+
+          <p className="mx-auto mt-5 max-w-xl text-base text-slate-600 md:text-lg">
+            Connect with experienced, verified tutors across every subject.
+            Learn at your own pace, on your own schedule.
+          </p>
+
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link href="/tutors" className={gradientBtn}>
+              Find a Tutor
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+
+            <Link href="/signUp" className={outlineBtn}>
+              Become a Tutor
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats */}
+      <section className="mx-auto max-w-6xl px-4">
+        <dl className="grid grid-cols-2 gap-4 rounded-2xl border border-white/60 bg-white/80 p-6 shadow-sm backdrop-blur md:grid-cols-4">
+          {STATS.map(({ value, label }) => (
+            <div key={label} className="text-center">
+              <dt className="sr-only">{label}</dt>
+              <dd className="bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-2xl font-bold text-transparent md:text-3xl">
+                {value}
+              </dd>
+              <p className="mt-1 text-sm text-slate-500" aria-hidden="true">
+                {label}
+              </p>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      {/* Features */}
+      <section className="mx-auto max-w-6xl px-4 py-20">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-3xl font-bold text-slate-900">
+            Why choose us
+          </h2>
+          <p className="mt-3 text-slate-600">
+            Everything you need to find, connect with, and learn from the
+            right tutor.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {FEATURES.map(({ title, description, icon: Icon, accent }) => (
+            <div
+              key={title}
+              className="rounded-xl border border-white/60 bg-white/80 p-6 shadow-sm backdrop-blur transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/10"
+            >
+              <div
+                className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg ${accent}`}
+              >
+                <Icon className="h-5 w-5" />
+              </div>
+
+              <h3 className="font-semibold text-slate-900">{title}</h3>
+
+              <p className="mt-1.5 text-sm text-slate-500">
+                {description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section
+        id="how-it-works"
+        className="scroll-mt-20 bg-white/60 py-20"
+      >
+        <div className="mx-auto max-w-6xl px-4">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-bold text-slate-900">
+              How it works
+            </h2>
+            <p className="mt-3 text-slate-600">
+              Get started in three simple steps.
+            </p>
+          </div>
+
+          <ol className="mt-12 grid gap-8 md:grid-cols-3">
+            {STEPS.map(({ title, description }, i) => (
+              <li key={title} className="relative text-center">
+                <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-lg font-bold text-white shadow-md shadow-purple-500/30">
+                  {i + 1}
+                </span>
+
+                <h3 className="mt-4 font-semibold text-slate-900">
+                  {title}
+                </h3>
+
+                <p className="mt-1.5 text-sm text-slate-500">
+                  {description}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="mx-auto max-w-6xl px-4 py-20">
+        <div className="overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-8 text-center text-white shadow-xl shadow-purple-500/20 md:p-14">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white/20">
+            <BookOpen className="h-6 w-6" />
+          </div>
+
+          <h2 className="mt-5 text-2xl font-bold md:text-3xl">
+            Ready to start learning?
+          </h2>
+
+          <p className="mx-auto mt-3 max-w-lg text-white/85">
+            Join as a student to find a tutor, or as a tutor to reach
+            students who need you.
+          </p>
+
+          <ul className="mx-auto mt-5 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-white/90">
+            {["Free to join", "Verified profiles", "Secure payments"].map(
+              (item) => (
+                <li key={item} className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4" />
+                  {item}
+                </li>
+              )
+            )}
+          </ul>
+
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link
+              href="/signUp"
+              className="inline-flex items-center justify-center rounded-md bg-white px-6 py-3 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-50"
+            >
+              <Users className="mr-2 h-4 w-4" />
+              Create free account
+            </Link>
+
+            <Link
+              href="/signIn"
+              className="inline-flex items-center justify-center rounded-md border border-white/60 bg-transparent px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-white/10"
+            >
+              Sign IN
+            </Link>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}

@@ -290,7 +290,7 @@ const SignUpPage = () => {
                 href="/signIn"
                 className="font-medium text-indigo-600 underline-offset-4 hover:text-purple-600 hover:underline"
               >
-                SignIn
+                Sign In
               </Link>
             </p>
           </CardFooter>
