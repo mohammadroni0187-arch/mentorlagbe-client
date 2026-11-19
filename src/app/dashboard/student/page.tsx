@@ -1,13 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { CreditCard, FileText, Loader2, LogOut, Search } from "lucide-react";
+import { CreditCard, FileText, Loader2, Search } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth-client";
 import { useRoleGuard } from "@/hooks/use-role-guard";
-import { ROUTES } from "@/lib/roles";
 
 type DashboardCard = {
   title: string;
@@ -21,7 +17,7 @@ const CARDS: DashboardCard[] = [
   {
     title: "Browse Tuitions",
     description: "Find your preferred tuition.",
-    href: "tuitions",
+    href: "/tuitions",
     icon: Search,
     accent: "bg-indigo-100 text-indigo-600",
   },

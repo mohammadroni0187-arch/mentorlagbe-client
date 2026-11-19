@@ -14,7 +14,6 @@ import {
   GraduationCap,
   PlusCircle,
   ClipboardList,
-  Settings,
 } from "lucide-react";
 
 import {
@@ -36,22 +35,20 @@ const menuItems = {
       title: "Overview",
       items: [
         { name: "Dashboard", url: "/dashboard/student", icon: LayoutDashboard },
-        { name: "My Profile", url: "/dashboard/student/profile", icon: UserRound },
+        { name: "My Profile", url: "/dashboard/profile", icon: UserRound },
       ],
     },
     {
       title: "Tuition",
       items: [
         { name: "Browse Tuitions", url: "/tuitions", icon: Search },
-        { name: "My Applications", url: "/dashboard/student/my-applications", icon: FileText },
-        { name: "My Tuitions", url: "/dashboard/student/my-tuitions", icon: BookOpen },
+        { name: "My Applications", url: "/dashboard/student/applications", icon: FileText },
       ],
     },
     {
       title: "Account",
       items: [
         { name: "Payments", url: "/dashboard/student/payments", icon: CreditCard },
-        { name: "Settings", url: "/dashboard/student/settings", icon: Settings },
       ],
     },
   ],
@@ -61,7 +58,7 @@ const menuItems = {
       title: "Overview",
       items: [
         { name: "Dashboard", url: "/dashboard/tutor", icon: LayoutDashboard },
-        { name: "My Profile", url: "/dashboard/tutor/profile", icon: UserRound },
+        { name: "My Profile", url: "/dashboard/profile", icon: UserRound },
       ],
     },
     {
@@ -69,14 +66,13 @@ const menuItems = {
       items: [
         { name: "Post Tuition", url: "/dashboard/tutor/post-tuition", icon: PlusCircle },
         { name: "My Tuitions", url: "/dashboard/tutor/my-tuitions", icon: BookOpen },
-        { name: "Applications", url: "/dashboard/tutor/applications", icon: ClipboardList },
+        { name: "Applicants", url: "/dashboard/tutor/applicants", icon: ClipboardList },
       ],
     },
     {
       title: "Account",
       items: [
         { name: "Payments", url: "/dashboard/tutor/payments", icon: CreditCard },
-        { name: "Settings", url: "/dashboard/tutor/settings", icon: Settings },
       ],
     },
   ],
@@ -86,6 +82,7 @@ const menuItems = {
       title: "Overview",
       items: [
         { name: "Dashboard", url: "/dashboard/admin", icon: LayoutDashboard },
+        { name: "My Profile", url: "/dashboard/profile", icon: UserRound },
       ],
     },
     {
@@ -93,14 +90,7 @@ const menuItems = {
       items: [
         { name: "Users", url: "/dashboard/admin/users", icon: Users },
         { name: "Tuitions", url: "/dashboard/admin/tuitions", icon: BookOpen },
-        { name: "Applications", url: "/dashboard/admin/applications", icon: ClipboardList },
-        { name: "Payments", url: "/dashboard/admin/payments", icon: CreditCard },
-      ],
-    },
-    {
-      title: "Account",
-      items: [
-        { name: "Settings", url: "/dashboard/admin/settings", icon: Settings },
+        { name: "Transactions", url: "/dashboard/admin/transactions", icon: CreditCard },
       ],
     },
   ],
@@ -139,6 +129,7 @@ export function DashboardSidebar() {
         {/* Logged-in User Profile */}
         <div className="mt-5 flex items-center gap-3 rounded-xl border bg-muted/40 p-3">
           {session?.user?.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={session.user.image}
               alt={session.user.name || "User"}

@@ -4,11 +4,23 @@ import { createAuthClient } from "better-auth/react";
 export const authClient = createAuthClient({
   baseURL: "http://localhost:5000",
 
-  plugins:[
+  plugins: [
     inferAdditionalFields({
-      user:{
-        role:{
-          type:"string"
+      user: {
+        role: {
+          type: "string",
+        },
+        phone: {
+          type: "string",
+          required: false,
+        },
+        bio: {
+          type: "string",
+          required: false,
+        },
+        plan: {
+          type: "string",
+          required: false,
         },
       },
     }),

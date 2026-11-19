@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { BookOpen, Eye, EyeOff, GraduationCap, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -45,11 +47,19 @@ const GoogleIcon = () => (
 );
 
 const SignUpPage = () => {
-  const [form, setForm] = useState({
+  const router = useRouter();
+  const [form, setForm] = useState<{
+    name: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    role: "student" | "tutor";
+  }>({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
+    role: "student",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -87,22 +97,26 @@ const SignUpPage = () => {
 
     setLoading(true);
     try {
-      const { data, error } = await signUp.email({
+      const { error } = await signUp.email({
         name: form.name.trim(),
         email: form.email,
         password: form.password,
+        role: form.role,
         callbackURL: "/dashboard",
       });
 
       if (error) {
         setErrors({ form: error.message ?? "Sign up fail hoyeche" });
+        toast.error(error.message ?? "Registration failed");
         return;
       }
 
-      console.log("Signup Success:", data);
+      toast.success("Account created successfully!");
+      router.push("/dashboard");
     } catch (err) {
       console.error("Signup Error:", err);
       setErrors({ form: "Kichu ekta vul hoyeche, abar try korun" });
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -143,6 +157,41 @@ const SignUpPage = () => {
 
         <form onSubmit={handleSubmit} noValidate>
           <CardContent className="space-y-5">
+            {/* Role Selection */}
+            <div className="grid gap-2">
+              <Label className="text-indigo-900 dark:text-indigo-200">
+                I want to join as
+              </Label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setForm((prev) => ({ ...prev, role: "student" }))}
+                  disabled={busy}
+                  className={`flex items-center justify-center gap-2 rounded-lg border p-3 text-sm font-medium transition-all ${
+                    form.role === "student"
+                      ? "border-indigo-600 bg-indigo-50/80 text-indigo-700 shadow-sm ring-1 ring-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300"
+                      : "border-indigo-200 bg-white/70 text-slate-600 hover:border-indigo-300 hover:bg-indigo-50/40 dark:border-indigo-900 dark:bg-slate-900/60 dark:text-slate-400"
+                  }`}
+                >
+                  <GraduationCap className="h-4 w-4" />
+                  Student
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm((prev) => ({ ...prev, role: "tutor" }))}
+                  disabled={busy}
+                  className={`flex items-center justify-center gap-2 rounded-lg border p-3 text-sm font-medium transition-all ${
+                    form.role === "tutor"
+                      ? "border-purple-600 bg-purple-50/80 text-purple-700 shadow-sm ring-1 ring-purple-600 dark:bg-purple-950/50 dark:text-purple-300"
+                      : "border-indigo-200 bg-white/70 text-slate-600 hover:border-purple-300 hover:bg-purple-50/40 dark:border-indigo-900 dark:bg-slate-900/60 dark:text-slate-400"
+                  }`}
+                >
+                  <BookOpen className="h-4 w-4" />
+                  Tutor
+                </button>
+              </div>
+            </div>
+
             {/* Name */}
             <div className="grid gap-2">
               <Label htmlFor="name" className="text-indigo-900 dark:text-indigo-200">

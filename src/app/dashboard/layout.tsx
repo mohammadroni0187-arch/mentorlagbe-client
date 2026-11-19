@@ -1,11 +1,12 @@
 
+
 import { DashboardSidebar } from "@/components/dashboardSidebar/page";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 
 export default function DashboardLayout({children,}: {children: React.ReactNode;}) {
   return (
      <SidebarProvider>
-      <DashboardSidebar />
+      <DashboardSidebar/>
 
       <main className="min-h-screen flex-1">
         <header className="flex h-14 items-center border-b px-4">
