@@ -21,7 +21,7 @@ const CARDS: DashboardCard[] = [
   {
     title: "Browse Tuitions",
     description: "Find your preferred tuition.",
-    href: "/dashboard/student/tuitions",
+    href: "tuitions",
     icon: Search,
     accent: "bg-indigo-100 text-indigo-600",
   },
@@ -42,13 +42,9 @@ const CARDS: DashboardCard[] = [
 ];
 
 const StudentPage = () => {
-  const router = useRouter();
   const { user, isLoading, isAuthorized } = useRoleGuard("student");
 
-  const handleSignOut = async () => {
-    await authClient.signOut();
-    router.replace(ROUTES.signIn);
-  };
+  
 
   if (isLoading || !isAuthorized || !user) {
     return (
@@ -76,14 +72,6 @@ const StudentPage = () => {
             </p>
           </div>
 
-          <Button
-            variant="outline"
-            onClick={handleSignOut}
-            className="border-indigo-200 hover:bg-indigo-50"
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign out
-          </Button>
         </header>
 
         <section className="mt-8 grid gap-5 md:grid-cols-3">

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  ChevronDown,
   GraduationCap,
   LayoutDashboard,
   LogOut,
@@ -91,6 +92,7 @@ const Navbar = () => {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
   const [open, setOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const user = session?.user;
   const role = getUserRole(user);
@@ -138,56 +140,110 @@ const Navbar = () => {
         </NavigationMenu>
 
         {/* Desktop auth */}
-        <div className="hidden items-center gap-2 lg:flex">
-          {isPending ? (
-            <div className="h-9 w-56 animate-pulse rounded-md bg-indigo-100" />
-          ) : user ? (
-            <>
-              <div className="mr-1 flex items-center gap-2.5">
-                <UserAvatar name={user.name} image={user.image} />
-                <div className="flex min-w-0 flex-col gap-1">
-                  <span className="max-w-[9rem] truncate text-sm font-medium leading-none text-slate-800">
-                    {user.name}
-                  </span>
-                  <RoleBadge role={role} />
-                </div>
-              </div>
+        
+{/* Desktop auth */}
+<div className="hidden items-center gap-3 lg:flex">
+  {isPending ? (
+    <div className="h-10 w-48 animate-pulse rounded-lg bg-indigo-100" />
+  ) : user ? (
+    <div className="relative">
+      {/* Profile Button */}
+      <button
+        type="button"
+        onClick={() => setProfileOpen((prev) => !prev)}
+        className="flex items-center gap-3 rounded-xl border border-indigo-100 bg-white px-3 py-2 transition hover:bg-indigo-50"
+        aria-expanded={profileOpen}
+        aria-haspopup="menu"
+      >
+        <UserAvatar
+          name={user.name}
+          image={user.image}
+          className="h-10 w-10"
+        />
 
-              <Link href={ROUTES.dashboard} className={`${buttonVariants({ size: "sm" })} ${gradientBtn}`}>
-                <LayoutDashboard className="mr-1.5 h-4 w-4" />
-                Dashboard
-              </Link>
-              <Link
-                href={ROUTES.profile}
-                className={`${buttonVariants({ variant: "outline", size: "sm" })} border-indigo-200 hover:bg-indigo-50`}
-              >
-                <UserCog className="mr-1.5 h-4 w-4" />
-                Update Profile
-              </Link>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSignOut}
-                className="text-slate-600 hover:bg-red-50 hover:text-red-600"
-              >
-                <LogOut className="mr-1.5 h-4 w-4" />
-                Sign Out
-              </Button>
-            </>
-          ) : (
-            <>
-              <Link
-                href={ROUTES.signIn}
-                className={`${buttonVariants({ variant: "ghost" })} text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800`}
-              >
-                Sign In
-              </Link>
-              <Link href={ROUTES.signUp} className={`${buttonVariants()} ${gradientBtn}`}>
-                Sign Up
-              </Link>
-            </>
-          )}
+        <div className="flex min-w-0 flex-col items-start gap-1">
+          <span className="max-w-32 truncate text-sm font-semibold text-slate-800">
+            {user.name}
+          </span>
+          <RoleBadge role={role} />
         </div>
+
+        <ChevronDown
+          className={`h-4 w-4 text-slate-500 transition-transform ${
+            profileOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {/* Dropdown Menu */}
+      {profileOpen && (
+        <div
+          role="menu"
+          className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-indigo-100 bg-white p-2 shadow-xl"
+        >
+          <div className="border-b border-slate-100 px-3 py-2">
+            <p className="truncate text-sm font-semibold text-slate-800">
+              {user.name}
+            </p>
+            <p className="truncate text-xs text-slate-500">
+              {user.email}
+            </p>
+          </div>
+
+          <Link
+            href={ROUTES.dashboard}
+            onClick={() => setProfileOpen(false)}
+            role="menuitem"
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"
+          >
+            <LayoutDashboard className="h-4 w-4" />
+            Dashboard
+          </Link>
+
+          <Link
+            href={ROUTES.profile}
+            onClick={() => setProfileOpen(false)}
+            role="menuitem"
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"
+          >
+            <UserCog className="h-4 w-4" />
+            Profile
+          </Link>
+
+          <button
+            type="button"
+            onClick={async () => {
+              setProfileOpen(false);
+              await handleSignOut();
+            }}
+            role="menuitem"
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-red-600 hover:bg-red-50"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </button>
+        </div>
+      )}
+    </div>
+  ) : (
+    <>
+      <Link
+        href={ROUTES.signIn}
+        className={`${buttonVariants({ variant: "ghost" })} text-indigo-700`}
+      >
+        Sign In
+      </Link>
+
+      <Link
+        href={ROUTES.signUp}
+        className={`${buttonVariants()} ${gradientBtn}`}
+      >
+        Sign Up
+      </Link>
+    </>
+  )}
+</div>
+
 
         {/* Mobile toggle */}
         <Button

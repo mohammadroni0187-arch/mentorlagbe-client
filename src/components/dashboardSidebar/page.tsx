@@ -15,14 +15,11 @@ import {
   PlusCircle,
   ClipboardList,
   Settings,
-  ShieldCheck,
-  CheckCircle,
 } from "lucide-react";
 
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupLabel,
   SidebarHeader,
@@ -120,7 +117,10 @@ export function DashboardSidebar() {
   return (
     <Sidebar>
       {/* Header */}
+      
+      {/* Sidebar Header + User Profile */}
       <SidebarHeader className="border-b px-4 py-5">
+        {/* Logo */}
         <Link href="/" className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <GraduationCap className="h-6 w-6" />
@@ -135,7 +135,37 @@ export function DashboardSidebar() {
             </p>
           </div>
         </Link>
+
+        {/* Logged-in User Profile */}
+        <div className="mt-5 flex items-center gap-3 rounded-xl border bg-muted/40 p-3">
+          {session?.user?.image ? (
+            <img
+              src={session.user.image}
+              alt={session.user.name || "User"}
+              className="h-11 w-11 rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-semibold text-primary-foreground">
+              {session?.user?.name?.charAt(0).toUpperCase() || "U"}
+            </div>
+          )}
+
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold">
+              {isPending ? "Loading..." : session?.user?.name || "User"}
+            </p>
+
+            <p className="truncate text-xs text-muted-foreground">
+              {session?.user?.email || ""}
+            </p>
+
+            <span className="mt-1 inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium capitalize text-primary">
+              {role || "User"}
+            </span>
+          </div>
+        </div>
       </SidebarHeader>
+
 
       {/* Sidebar Menu */}
       <SidebarContent className="px-3 py-4">
@@ -174,24 +204,7 @@ export function DashboardSidebar() {
       </SidebarContent>
 
       {/* Footer */}
-      <SidebarFooter className="border-t p-4">
-        <div className="flex items-center gap-3 rounded-xl bg-muted/60 p-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <ShieldCheck className="h-5 w-5" />
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold">
-              {session?.user?.name || "User"}
-            </p>
-            <p className="text-xs capitalize text-muted-foreground">
-              {role || "Loading role"}
-            </p>
-          </div>
-
-          <CheckCircle className="h-4 w-4 text-green-600" />
-        </div>
-      </SidebarFooter>
+      
     </Sidebar>
   );
 }
