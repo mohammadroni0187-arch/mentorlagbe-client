@@ -214,10 +214,10 @@ const SignInPage = () => {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Logging in...
+                  Signing in...
                 </>
               ) : (
-                "Login"
+                "Sign In"
               )}
             </Button>
 
@@ -239,7 +239,7 @@ const SignInPage = () => {
               ) : (
                 <GoogleIcon />
               )}
-              Login with Google
+              Sign In with Google
             </Button>
           </CardFooter>
         </form>
