@@ -127,7 +127,7 @@ const SignUpPage = () => {
     try {
       const { error } = await signIn.social({
         provider: "google",
-        callbackURL: "/dashboard",
+        callbackURL: "http://localhost:3000/dashboard",
       });
 
       if (error) {

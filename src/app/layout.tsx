@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Toaster } from "sonner";
+import { ToastContainer } from 'react-toastify';
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -32,7 +33,8 @@ export default function RootLayout({
         <div className="flex-1">
           {children}
         </div>
-        <Toaster position="top-right" richColors />
+        
+        <ToastContainer position="top-right" />
       </body>
     </html>
   );

@@ -91,8 +91,22 @@ function normalizeApplication(raw: unknown): Application | null {
   if (!raw || typeof raw !== "object") return null;
   const r = raw as Record<string, unknown>;
 
-  const id = r._id ?? r.id;
-  if (typeof id !== "string" && typeof id !== "number") return null;
+  const rawId = r._id ?? r.id;
+
+const id =
+  typeof rawId === "string" || typeof rawId === "number"
+    ? String(rawId)
+    : rawId &&
+        typeof rawId === "object" &&
+        "$oid" in rawId
+      ? String((rawId as { $oid: string }).$oid)
+      : rawId &&
+          typeof rawId === "object" &&
+          "toString" in rawId
+        ? String(rawId)
+        : "";
+
+if (!id || id === "[object Object]") return null;
 
   const student = obj(r.student);
   const tuition = obj(r.tuition ?? r.tuitionId);
@@ -359,7 +373,13 @@ const ApplicantsContent = () => {
     setBusyId(application.id);
     try {
       await apiFetch(ENDPOINTS.status(application.id), { method: "PATCH", body: { status } });
-      setApplications((list) => list.map((a) => (a.id === application.id ? { ...a, status } : a)));
+      setApplications((list) =>
+  list.map((a) =>
+    a.id === application.id ? { ...a, status } : a
+  )
+);
+
+setReloadKey((key) => key + 1);
       notify(
         "success",
         `${application.studentName}'s application ${status === "accepted" ? "accepted" : "rejected"}.`

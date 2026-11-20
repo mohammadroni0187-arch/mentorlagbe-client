@@ -68,7 +68,7 @@ const MENUS: Record<Role, MenuGroup[]> = {
     },
     {
       title: "Account",
-      items: [{ name: "Payments", url: "/dashboard/student/payments", icon: CreditCard }],
+      items: [{ name: "Payments", url: "/dashboard/student/payment", icon: CreditCard }],
     },
   ],
 
