@@ -12,6 +12,7 @@ import {
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { apiFetch } from "@/lib/api";
 
 type Plan = {
   name: string;
@@ -39,7 +40,7 @@ const tutorPlans: Plan[] = [
   },
   {
     name: "Monthly Pro",
-    price: "Monthly",
+    price: "$5",
     period: "Billed monthly",
     description: "Grow your tutoring business.",
     type: "monthly",
@@ -54,7 +55,7 @@ const tutorPlans: Plan[] = [
   },
   {
     name: "Yearly Pro",
-    price: "Yearly",
+    price: "$50",
     period: "Billed annually",
     description: "Best for long-term tutors.",
     type: "yearly",
@@ -84,7 +85,7 @@ const studentPlans: Plan[] = [
   },
   {
     name: "Monthly Pro",
-    price: "Monthly",
+    price: "$3",
     period: "Billed monthly",
     description: "A better learning experience.",
     type: "monthly",
@@ -98,7 +99,7 @@ const studentPlans: Plan[] = [
   },
   {
     name: "Yearly Pro",
-    price: "Yearly",
+    price: "$30",
     period: "Billed annually",
     description: "For dedicated learners.",
     type: "yearly",
@@ -220,7 +221,7 @@ function PlanCard({
 export default function Pricing() {
   const router = useRouter();
 
-  const handleSelect = (
+   const handleSelect = async (
     plan: Plan,
     audience: "tutor" | "student"
   ) => {
@@ -233,9 +234,27 @@ export default function Pricing() {
       return;
     }
 
-    alert(
-      `${audience === "tutor" ? "Tutor" : "Student"} ${plan.name} checkout will be connected after the backend update.`
-    );
+    try {
+      const response = await apiFetch<{ url?: string }>(
+        "/api/payments/create-plan-checkout-session",
+        {
+          method: "POST",
+          body: {
+            audience,
+            interval: plan.type,
+          },
+        }
+      );
+
+      if (response.url) {
+        window.location.assign(response.url);
+      } else {
+        alert("Checkout URL not received.");
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert("Payment checkout failed. Please try again.");
+    }
   };
 
   return (
