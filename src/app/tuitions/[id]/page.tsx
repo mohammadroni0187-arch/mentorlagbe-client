@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
@@ -55,11 +56,9 @@ const readString = (user: unknown, key: string): string => {
   return typeof value === "string" ? value : "";
 };
 
-/* ------------------------------------------------------------------ */
-/* Apply form (shudhu student, login kora)                              */
-/* ------------------------------------------------------------------ */
-
-type ApplyErrors = Partial<Record<"preferredSchedule" | "phone" | "note" | "form", string>>;
+type ApplyErrors = Partial<
+  Record<"preferredSchedule" | "phone" | "note" | "form", string>
+>;
 
 const ApplyForm = ({
   tuitionId,
@@ -70,12 +69,20 @@ const ApplyForm = ({
   defaultPhone: string;
   onApplied: () => void;
 }) => {
-  const [form, setForm] = useState({ preferredSchedule: "", phone: defaultPhone, note: "" });
+  const [form, setForm] = useState({
+    preferredSchedule: "",
+    phone: defaultPhone,
+    note: "",
+  });
+
   const [errors, setErrors] = useState<ApplyErrors>({});
   const [submitting, setSubmitting] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
+
     setForm((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: undefined, form: undefined }));
   };
@@ -85,12 +92,19 @@ const ApplyForm = ({
     const schedule = form.preferredSchedule.trim();
     const phone = form.phone.replace(/[\s-]/g, "");
 
-    if (schedule.length < 3) e.preferredSchedule = "Preferred schedule dite hobe";
-    else if (schedule.length > 100) e.preferredSchedule = "Schedule 100 character-er beshi hobe na";
+    if (schedule.length < 3) {
+      e.preferredSchedule = "Preferred schedule dite hobe";
+    } else if (schedule.length > 100) {
+      e.preferredSchedule = "Schedule 100 character-er beshi hobe na";
+    }
 
-    if (phone && !/^\+?\d{10,15}$/.test(phone)) e.phone = "Valid phone number din";
+    if (phone && !/^\+?\d{10,15}$/.test(phone)) {
+      e.phone = "Valid phone number din";
+    }
 
-    if (form.note.length > NOTE_MAX) e.note = `Note ${NOTE_MAX} character-er beshi hobe na`;
+    if (form.note.length > NOTE_MAX) {
+      e.note = `Note ${NOTE_MAX} character-er beshi hobe na`;
+    }
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -98,9 +112,11 @@ const ApplyForm = ({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (submitting || !validate()) return;
 
     setSubmitting(true);
+
     try {
       await apiFetch("/api/applications", {
         method: "POST",
@@ -111,13 +127,14 @@ const ApplyForm = ({
           note: form.note.trim(),
         },
       });
+
       onApplied();
     } catch (err) {
-      // 409 mane age-i apply kora, tai applied state-e niye jai
       if (err instanceof ApiError && err.status === 409) {
         onApplied();
         return;
       }
+
       setErrors({ form: getErrorMessage(err) });
     } finally {
       setSubmitting(false);
@@ -130,6 +147,7 @@ const ApplyForm = ({
         <Label htmlFor="preferredSchedule" className="text-indigo-900">
           Preferred schedule <span className="text-pink-500">*</span>
         </Label>
+
         <Input
           id="preferredSchedule"
           name="preferredSchedule"
@@ -140,8 +158,11 @@ const ApplyForm = ({
           disabled={submitting}
           className={inputClass}
         />
+
         {errors.preferredSchedule && (
-          <p className="text-xs text-destructive">{errors.preferredSchedule}</p>
+          <p className="text-xs text-destructive">
+            {errors.preferredSchedule}
+          </p>
         )}
       </div>
 
@@ -149,6 +170,7 @@ const ApplyForm = ({
         <Label htmlFor="apply-phone" className="text-indigo-900">
           Phone <span className="font-normal text-slate-500">(optional)</span>
         </Label>
+
         <Input
           id="apply-phone"
           name="phone"
@@ -161,13 +183,17 @@ const ApplyForm = ({
           disabled={submitting}
           className={inputClass}
         />
-        {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
+
+        {errors.phone && (
+          <p className="text-xs text-destructive">{errors.phone}</p>
+        )}
       </div>
 
       <div className="grid gap-2">
         <Label htmlFor="note" className="text-indigo-900">
           Note <span className="font-normal text-slate-500">(optional)</span>
         </Label>
+
         <textarea
           id="note"
           name="note"
@@ -179,6 +205,7 @@ const ApplyForm = ({
           maxLength={NOTE_MAX}
           className={textareaClass}
         />
+
         <div className="flex justify-between gap-2">
           <p className="text-xs text-destructive">{errors.note}</p>
           <p className="shrink-0 text-xs text-slate-500">
@@ -188,12 +215,19 @@ const ApplyForm = ({
       </div>
 
       {errors.form && (
-        <p className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600" role="alert">
+        <p
+          className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600"
+          role="alert"
+        >
           {errors.form}
         </p>
       )}
 
-      <Button type="submit" disabled={submitting} className={`w-full ${gradientBtn}`}>
+      <Button
+        type="submit"
+        disabled={submitting}
+        className={`w-full ${gradientBtn}`}
+      >
         {submitting ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -207,29 +241,35 @@ const ApplyForm = ({
   );
 };
 
-/* ------------------------------------------------------------------ */
-/* Apply panel: login / role / already-applied obostha handle kore       */
-/* ------------------------------------------------------------------ */
-
 type AppliedState = "checking" | "applied" | "open";
 
-const StudentApply = ({ tuitionId, phone }: { tuitionId: string; phone: string }) => {
+const StudentApply = ({
+  tuitionId,
+  phone,
+}: {
+  tuitionId: string;
+  phone: string;
+}) => {
   const [state, setState] = useState<AppliedState>("checking");
 
-  // Student age-i apply koreche kina check
   useEffect(() => {
     let cancelled = false;
 
     apiFetch<{ data?: unknown }>("/api/applications/student")
       .then((res) => {
         if (cancelled) return;
+
         const list = Array.isArray(res.data) ? res.data : [];
+
         const already = list.some(
-          (a) => a && typeof a === "object" && String((a as { tuitionId?: unknown }).tuitionId) === tuitionId
+          (a) =>
+            a &&
+            typeof a === "object" &&
+            String((a as { tuitionId?: unknown }).tuitionId) === tuitionId
         );
+
         setState(already ? "applied" : "open");
       })
-      // Check fail korleo form dekhai, server-i duplicate (409) atkabe
       .catch(() => {
         if (!cancelled) setState("open");
       });
@@ -250,17 +290,26 @@ const StudentApply = ({ tuitionId, phone }: { tuitionId: string; phone: string }
 
   if (state === "applied") {
     return (
-      <div className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800" role="status">
+      <div
+        className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800"
+        role="status"
+      >
         <p className="flex items-center gap-2 font-semibold">
           <CheckCircle2 className="h-4 w-4" />
           Application submitted
         </p>
+
         <p className="mt-1 text-green-700">
-          The tutor will review your application. You can track its status from your dashboard.
+          The tutor will review your application. You can track its status from
+          your dashboard.
         </p>
+
         <Link
           href="/dashboard/student/applications"
-          className={`${buttonVariants({ variant: "outline", size: "sm" })} mt-3 border-green-300 bg-white/70 hover:bg-green-100`}
+          className={`${buttonVariants({
+            variant: "outline",
+            size: "sm",
+          })} mt-3 border-green-300 bg-white/70 hover:bg-green-100`}
         >
           View my applications
         </Link>
@@ -268,28 +317,49 @@ const StudentApply = ({ tuitionId, phone }: { tuitionId: string; phone: string }
     );
   }
 
-  return <ApplyForm tuitionId={tuitionId} defaultPhone={phone} onApplied={() => setState("applied")} />;
+  return (
+    <ApplyForm
+      tuitionId={tuitionId}
+      defaultPhone={phone}
+      onApplied={() => setState("applied")}
+    />
+  );
 };
 
 const ApplyPanel = ({ tuitionId }: { tuitionId: string }) => {
   const { data: session, isPending } = authClient.useSession();
+
   const user = session?.user;
   const role = getUserRole(user);
 
   if (isPending) {
-    return <div className="h-40 animate-pulse rounded-xl bg-indigo-50" aria-hidden="true" />;
+    return (
+      <div
+        className="h-40 animate-pulse rounded-xl bg-indigo-50"
+        aria-hidden="true"
+      />
+    );
   }
 
   if (!user) {
     return (
       <div className="grid gap-3">
-        <p className="text-sm text-slate-600">Sign in with a student account to apply for this tuition.</p>
-        <Link href={ROUTES.signIn} className={`${buttonVariants()} ${gradientBtn}`}>
+        <p className="text-sm text-slate-600">
+          Sign in with a student account to apply for this tuition.
+        </p>
+
+        <Link
+          href={ROUTES.signIn}
+          className={`${buttonVariants()} ${gradientBtn}`}
+        >
           Sign in to apply
         </Link>
+
         <Link
           href={ROUTES.signUp}
-          className={`${buttonVariants({ variant: "outline" })} border-indigo-200 hover:bg-indigo-50`}
+          className={`${buttonVariants({
+            variant: "outline",
+          })} border-indigo-200 hover:bg-indigo-50`}
         >
           Create an account
         </Link>
@@ -305,14 +375,20 @@ const ApplyPanel = ({ tuitionId }: { tuitionId: string }) => {
     );
   }
 
-  return <StudentApply tuitionId={tuitionId} phone={readString(user, "phone")} />;
+  return (
+    <StudentApply
+      tuitionId={tuitionId}
+      phone={readString(user, "phone")}
+    />
+  );
 };
 
-/* ------------------------------------------------------------------ */
-/* Page                                                                */
-/* ------------------------------------------------------------------ */
-
-type DetailsState = { key: string; tuition: Tuition | null; error: string | null; notFound: boolean };
+type DetailsState = {
+  key: string;
+  tuition: Tuition | null;
+  error: string | null;
+  notFound: boolean;
+};
 
 const InfoItem = ({
   icon: Icon,
@@ -326,18 +402,25 @@ const InfoItem = ({
   accent: string;
 }) => (
   <div className="flex items-start gap-3 rounded-xl bg-indigo-50/50 p-3">
-    <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${accent}`}>
+    <span
+      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${accent}`}
+    >
       <Icon className="h-4 w-4" />
     </span>
+
     <div className="min-w-0">
       <dt className="text-xs text-slate-500">{label}</dt>
-      <dd className="break-words text-sm font-medium text-slate-900">{value}</dd>
+      <dd className="break-words text-sm font-medium text-slate-900">
+        {value}
+      </dd>
     </div>
   </div>
 );
 
-const TuitionDetailsPage = () => {
+/* useParams আলাদা component-এ রাখা হয়েছে */
+const TuitionDetailsContent = () => {
   const { id } = useParams<{ id: string }>();
+
   const [reloadKey, setReloadKey] = useState(0);
   const [state, setState] = useState<DetailsState | null>(null);
 
@@ -346,10 +429,14 @@ const TuitionDetailsPage = () => {
   useEffect(() => {
     let cancelled = false;
 
-    apiFetch<{ data?: unknown }>(`/api/tuitions/${id}`, { auth: false })
+    apiFetch<{ data?: unknown }>(`/api/tuitions/${id}`, {
+      auth: false,
+    })
       .then((res) => {
         if (cancelled) return;
+
         const tuition = normalizeTuition(res.data);
+
         setState({
           key,
           tuition,
@@ -359,11 +446,14 @@ const TuitionDetailsPage = () => {
       })
       .catch((err) => {
         if (cancelled) return;
+
         setState({
           key,
           tuition: null,
           error: getErrorMessage(err, "Tuition load kora jayni"),
-          notFound: err instanceof ApiError && (err.status === 404 || err.status === 400),
+          notFound:
+            err instanceof ApiError &&
+            (err.status === 404 || err.status === 400),
         });
       });
 
@@ -375,10 +465,17 @@ const TuitionDetailsPage = () => {
   const loading = state?.key !== key;
   const tuition = state?.tuition ?? null;
 
-  const posted = tuition?.createdAt ? new Date(tuition.createdAt) : null;
+  const posted = tuition?.createdAt
+    ? new Date(tuition.createdAt)
+    : null;
+
   const postedText =
     posted && !Number.isNaN(posted.getTime())
-      ? posted.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+      ? posted.toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })
       : null;
 
   return (
@@ -393,13 +490,17 @@ const TuitionDetailsPage = () => {
         </Link>
 
         {loading ? (
-          <div className="grid animate-pulse gap-6 lg:grid-cols-[1fr_360px]" aria-busy="true">
+          <div
+            className="grid animate-pulse gap-6 lg:grid-cols-[1fr_360px]"
+            aria-busy="true"
+          >
             <div className="space-y-4">
               <div className="aspect-[16/7] rounded-2xl bg-indigo-100" />
               <div className="h-8 w-3/4 rounded bg-indigo-100" />
               <div className="h-4 w-full rounded bg-indigo-50" />
               <div className="h-4 w-2/3 rounded bg-indigo-50" />
             </div>
+
             <div className="h-72 rounded-2xl bg-indigo-100" />
           </div>
         ) : !tuition ? (
@@ -407,14 +508,19 @@ const TuitionDetailsPage = () => {
             <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
               <GraduationCap className="h-7 w-7" />
             </span>
+
             <h1 className="mt-4 text-lg font-semibold text-slate-900">
-              {state?.notFound ? "Tuition not found" : "Something went wrong"}
+              {state?.notFound
+                ? "Tuition not found"
+                : "Something went wrong"}
             </h1>
+
             <p className="mt-1 text-sm text-slate-600">
               {state?.notFound
                 ? "This tuition may have been closed or removed."
                 : state?.error}
             </p>
+
             <div className="mt-5 flex justify-center gap-3">
               {!state?.notFound && (
                 <Button
@@ -426,14 +532,17 @@ const TuitionDetailsPage = () => {
                   Try again
                 </Button>
               )}
-              <Link href="/tuitions" className={`${buttonVariants()} ${gradientBtn}`}>
+
+              <Link
+                href="/tuitions"
+                className={`${buttonVariants()} ${gradientBtn}`}
+              >
                 Browse tuitions
               </Link>
             </div>
           </div>
         ) : (
           <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-            {/* Main */}
             <article className="min-w-0 space-y-6">
               <div className="overflow-hidden rounded-2xl border border-white/60 bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 shadow-sm">
                 {tuition.bannerImage ? (
@@ -455,19 +564,28 @@ const TuitionDetailsPage = () => {
                   <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-700">
                     {tuition.subject}
                   </span>
+
                   {tuition.classLevel && (
                     <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-700">
                       {tuition.classLevel}
                     </span>
                   )}
                 </div>
-                <h1 className="mt-3 text-2xl font-bold text-slate-900 md:text-3xl">{tuition.title}</h1>
+
+                <h1 className="mt-3 text-2xl font-bold text-slate-900 md:text-3xl">
+                  {tuition.title}
+                </h1>
+
                 <p className="mt-2 text-sm text-slate-500">
                   {tuition.tutorName && (
                     <>
-                      Posted by <span className="font-medium text-slate-700">{tuition.tutorName}</span>
+                      Posted by{" "}
+                      <span className="font-medium text-slate-700">
+                        {tuition.tutorName}
+                      </span>
                     </>
                   )}
+
                   {tuition.tutorName && postedText && " · "}
                   {postedText}
                 </p>
@@ -480,12 +598,14 @@ const TuitionDetailsPage = () => {
                   value={tuition.subject}
                   accent="bg-indigo-100 text-indigo-600"
                 />
+
                 <InfoItem
                   icon={Layers}
                   label="Class level"
                   value={tuition.classLevel || "Not specified"}
                   accent="bg-purple-100 text-purple-600"
                 />
+
                 <InfoItem
                   icon={MODE_ICONS[tuition.mode]}
                   label="Mode"
@@ -496,29 +616,36 @@ const TuitionDetailsPage = () => {
                   }
                   accent="bg-pink-100 text-pink-600"
                 />
+
                 <InfoItem
                   icon={CalendarDays}
                   label="Schedule"
-                  value={`${tuition.daysPerWeek} ${tuition.daysPerWeek === 1 ? "day" : "days"} per week`}
+                  value={`${tuition.daysPerWeek} ${
+                    tuition.daysPerWeek === 1 ? "day" : "days"
+                  } per week`}
                   accent="bg-emerald-100 text-emerald-600"
                 />
               </dl>
 
               <section className="rounded-2xl border border-white/60 bg-white/80 p-5 shadow-sm backdrop-blur">
-                <h2 className="font-semibold text-slate-900">About this tuition</h2>
+                <h2 className="font-semibold text-slate-900">
+                  About this tuition
+                </h2>
+
                 <p className="mt-3 whitespace-pre-line break-words text-sm leading-relaxed text-slate-700">
                   {tuition.description}
                 </p>
               </section>
             </article>
 
-            {/* Apply */}
             <aside className="lg:sticky lg:top-24 lg:self-start">
               <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/90 shadow-xl shadow-indigo-500/10 backdrop-blur">
                 <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+
                 <div className="space-y-5 p-5">
                   <div>
                     <p className="text-sm text-slate-500">Monthly fee</p>
+
                     <p className="flex items-center gap-2 text-3xl font-bold text-slate-900">
                       <Wallet className="h-6 w-6 text-purple-500" />
                       {formatFee(tuition.monthlyFee)}
@@ -528,7 +655,10 @@ const TuitionDetailsPage = () => {
                   <hr className="border-indigo-100" />
 
                   <div>
-                    <h2 className="mb-3 font-semibold text-slate-900">Apply for this tuition</h2>
+                    <h2 className="mb-3 font-semibold text-slate-900">
+                      Apply for this tuition
+                    </h2>
+
                     <ApplyPanel tuitionId={tuition.id} />
                   </div>
                 </div>
@@ -538,6 +668,31 @@ const TuitionDetailsPage = () => {
         )}
       </div>
     </main>
+  );
+};
+
+/* Suspense boundary */
+const TuitionDetailsPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-pink-50 px-4 py-8 md:py-12">
+          <div className="mx-auto max-w-6xl animate-pulse">
+            <div className="mb-5 h-5 w-36 rounded bg-indigo-100" />
+            <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+              <div className="space-y-4">
+                <div className="aspect-[16/7] rounded-2xl bg-indigo-100" />
+                <div className="h-8 w-3/4 rounded bg-indigo-100" />
+                <div className="h-4 w-full rounded bg-indigo-50" />
+              </div>
+              <div className="h-72 rounded-2xl bg-indigo-100" />
+            </div>
+          </div>
+        </main>
+      }
+    >
+      <TuitionDetailsContent />
+    </Suspense>
   );
 };
 

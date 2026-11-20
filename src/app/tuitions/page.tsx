@@ -15,6 +15,7 @@ import {
   type Mode,
   type Tuition,
 } from "@/lib/tuition";
+import { useRouter } from "next/navigation";
 
 const PAGE_SIZE = 9;
 
@@ -55,11 +56,13 @@ const SkeletonCard = () => (
 );
 
 const TuitionsPage = () => {
+  const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [page, setPage] = useState(1);
   const [reloadKey, setReloadKey] = useState(0);
   const [result, setResult] = useState<Result | null>(null);
+  
 
   // Search box-e likhle 400ms por query chalabo (prottek key-te na)
   useEffect(() => {
@@ -135,6 +138,15 @@ const TuitionsPage = () => {
   return (
     <main className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-pink-50 px-4 py-10 md:py-14">
       <div className="mx-auto max-w-6xl">
+        <div className="mb-6">
+          <Button
+            variant="outline"
+            onClick={() => router.back()}
+            className="border-indigo-200 bg-white/80 text-indigo-700 hover:bg-indigo-50"
+          >
+            ← Back
+          </Button>
+        </div>
         <header className="mb-8 text-center">
           <h1 className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-3xl font-bold text-transparent md:text-4xl">
             Browse Tuitions
