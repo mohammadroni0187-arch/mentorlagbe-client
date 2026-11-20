@@ -10,6 +10,7 @@ import { apiFetch } from "@/lib/api";
 import {
   CLASS_LEVELS,
   MODE_LABELS,
+  SUBJECT_SUGGESTIONS,
   extractTuitions,
   getErrorMessage,
   type Mode,
@@ -19,9 +20,21 @@ import { useRouter } from "next/navigation";
 
 const PAGE_SIZE = 9;
 
-type Filters = { search: string; classLevel: string; mode: "" | Mode; sort: string };
+type Filters = {
+  search: string;
+  subject: string;
+  classLevel: string;
+  mode: "" | Mode;
+  sort: string;
+};
 
-const DEFAULT_FILTERS: Filters = { search: "", classLevel: "", mode: "", sort: "newest" };
+const DEFAULT_FILTERS: Filters = {
+  search: "",
+  subject: "",
+  classLevel: "",
+  mode: "",
+  sort: "newest",
+};
 
 const SORT_OPTIONS = [
   { value: "newest", label: "Newest first" },
@@ -76,6 +89,7 @@ const TuitionsPage = () => {
 
   const params = new URLSearchParams({ page: String(page), limit: String(PAGE_SIZE), sort: filters.sort });
   if (filters.search) params.set("search", filters.search);
+  if (filters.subject) params.set("subject", filters.subject);
   if (filters.classLevel) params.set("classLevel", filters.classLevel);
   if (filters.mode) params.set("mode", filters.mode);
   const queryKey = `${params.toString()}#${reloadKey}`;
@@ -122,7 +136,13 @@ const TuitionsPage = () => {
     setPage(1);
   };
 
-  const hasActiveFilters = !!(filters.search || filters.classLevel || filters.mode || searchInput);
+  const hasActiveFilters = !!(
+    filters.search ||
+    filters.subject ||
+    filters.classLevel ||
+    filters.mode ||
+    searchInput
+  );
 
   const clearFilters = () => {
     setSearchInput("");
@@ -159,7 +179,7 @@ const TuitionsPage = () => {
         {/* Filters */}
         <section
           aria-label="Filters"
-          className="grid gap-3 rounded-2xl border border-white/60 bg-white/80 p-4 shadow-sm backdrop-blur sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_auto]"
+          className="grid gap-3 rounded-2xl border border-white/60 bg-white/80 p-4 shadow-sm backdrop-blur sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto]"
         >
           <div className="relative sm:col-span-2 lg:col-span-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-400" />
@@ -171,6 +191,20 @@ const TuitionsPage = () => {
               className={`${inputClass} pl-9`}
             />
           </div>
+
+          <select
+            value={filters.subject}
+            onChange={(e) => updateFilter("subject", e.target.value)}
+            aria-label="Subject"
+            className={selectClass}
+          >
+            <option value="">All subjects</option>
+            {SUBJECT_SUGGESTIONS.map((subject) => (
+              <option key={subject} value={subject}>
+                {subject}
+              </option>
+            ))}
+          </select>
 
           <select
             value={filters.classLevel}

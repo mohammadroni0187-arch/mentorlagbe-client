@@ -275,28 +275,32 @@ const ApplicationCard = ({
       <div className="mt-4 flex flex-wrap items-center justify-end gap-2 border-t border-indigo-100 pt-4">
         {busy && <Loader2 className="h-4 w-4 animate-spin text-indigo-500" aria-label="Updating" />}
 
-        {status !== "rejected" && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onUpdate("rejected")}
-            disabled={busy}
-            className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-          >
-            <X className="mr-1.5 h-4 w-4" />
-            Reject
-          </Button>
-        )}
-        {status !== "accepted" && (
-          <Button
-            size="sm"
-            onClick={() => onUpdate("accepted")}
-            disabled={busy}
-            className="bg-green-600 text-white shadow-md shadow-green-500/20 hover:bg-green-700"
-          >
-            <Check className="mr-1.5 h-4 w-4" />
-            Accept
-          </Button>
+        {status === "pending" ? (
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onUpdate("rejected")}
+              disabled={busy}
+              className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+            >
+              <X className="mr-1.5 h-4 w-4" />
+              Reject
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => onUpdate("accepted")}
+              disabled={busy}
+              className="bg-green-600 text-white shadow-md shadow-green-500/20 hover:bg-green-700"
+            >
+              <Check className="mr-1.5 h-4 w-4" />
+              Accept
+            </Button>
+          </>
+        ) : (
+          <span className="text-xs text-slate-400">
+            This application is already {status}.
+          </span>
         )}
       </div>
     </article>

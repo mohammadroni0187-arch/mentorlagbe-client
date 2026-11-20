@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -444,12 +445,14 @@ const PostTuitionContent = ({ plan }: { plan: Plan }) => {
 
       setSubmittedTitle(form.title.trim());
       setCount((c) => (c === null ? c : c + 1));
+      toast.success("Tuition submitted for admin approval!");
     } catch (err) {
       const message =
         err instanceof ApiError || err instanceof Error
           ? err.message
           : "Kichu ekta vul hoyeche, abar try korun";
       setErrors({ form: message });
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }

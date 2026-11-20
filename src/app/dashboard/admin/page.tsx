@@ -69,7 +69,7 @@ const AdminPage = () => {
         stats?: AdminStats;
       }>("/api/admin/stats");
 
-      setStats(response.data ?? response.stats ?? response);
+      setStats(response.data ?? response.stats ?? (response as unknown as AdminStats));
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Dashboard statistics load failed."

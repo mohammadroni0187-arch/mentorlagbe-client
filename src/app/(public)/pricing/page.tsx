@@ -11,6 +11,7 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
 
@@ -40,7 +41,7 @@ const tutorPlans: Plan[] = [
   },
   {
     name: "Monthly Pro",
-    price: "$5",
+    price: "$15",
     period: "Billed monthly",
     description: "Grow your tutoring business.",
     type: "monthly",
@@ -85,7 +86,7 @@ const studentPlans: Plan[] = [
   },
   {
     name: "Monthly Pro",
-    price: "$3",
+    price: "$10",
     period: "Billed monthly",
     description: "A better learning experience.",
     type: "monthly",
@@ -249,11 +250,15 @@ export default function Pricing() {
       if (response.url) {
         window.location.assign(response.url);
       } else {
-        alert("Checkout URL not received.");
+        toast.error("Checkout URL not received. Please try again.");
       }
     } catch (error) {
       console.error("Checkout error:", error);
-      alert("Payment checkout failed. Please try again.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Payment checkout failed. Please try again."
+      );
     }
   };
 

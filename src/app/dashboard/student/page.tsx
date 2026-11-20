@@ -34,14 +34,14 @@ const CARDS: DashboardCard[] = [
   {
     title: "My Applications",
     description: "Track your applications.",
-    href: "/dashboard/student/my-applications",
+    href: "/dashboard/student/applications",
     icon: FileText,
     accent: "bg-purple-100 text-purple-600",
   },
   {
     title: "My Payments",
     description: "View your payment history.",
-    href: "/dashboard/student/payments",
+    href: "/dashboard/student/payment",
     icon: CreditCard,
     accent: "bg-pink-100 text-pink-600",
   },

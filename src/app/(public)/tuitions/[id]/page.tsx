@@ -19,6 +19,7 @@ import {
   Layers,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -129,13 +130,16 @@ const ApplyForm = ({
       });
 
       onApplied();
+      toast.success("Application submitted successfully!");
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         onApplied();
+        toast.info("You have already applied to this tuition.");
         return;
       }
 
       setErrors({ form: getErrorMessage(err) });
+      toast.error(getErrorMessage(err));
     } finally {
       setSubmitting(false);
     }
@@ -589,6 +593,18 @@ const TuitionDetailsContent = () => {
                   {tuition.tutorName && postedText && " · "}
                   {postedText}
                 </p>
+
+                {tuition.tutorEmail && (
+                  <p className="mt-1 text-sm text-slate-500">
+                    Tutor contact:{" "}
+                    <a
+                      href={`mailto:${tuition.tutorEmail}`}
+                      className="text-indigo-600 hover:underline"
+                    >
+                      {tuition.tutorEmail}
+                    </a>
+                  </p>
+                )}
               </header>
 
               <dl className="grid gap-3 sm:grid-cols-2">

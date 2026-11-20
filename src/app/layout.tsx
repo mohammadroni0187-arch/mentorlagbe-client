@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ToastContainer } from 'react-toastify';
+import { Toaster } from 'sonner';
 
 import "./globals.css";
 
@@ -35,6 +36,8 @@ export default function RootLayout({
         </div>
         
         <ToastContainer position="top-right" />
+        {/* Pages use sonner's toast(); the handler must be mounted globally. */}
+        <Toaster position="top-right" richColors closeButton />
       </body>
     </html>
   );

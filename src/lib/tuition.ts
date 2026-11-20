@@ -19,6 +19,9 @@ export type Tuition = {
   daysPerWeek: number;
   description: string;
   bannerImage: string;
+  tutorId?: string;
+  tutorName?: string;
+  tutorEmail?: string;
   approvalStatus: ApprovalStatus;
   status: ListingStatus;
   rejectionReason: string;
@@ -112,6 +115,9 @@ export function normalizeTuition(raw: unknown): Tuition | null {
     daysPerWeek: num(r.daysPerWeek, 1),
     description: str(r.description),
     bannerImage: str(r.bannerImage),
+    tutorId: r.tutorId === undefined ? undefined : String(r.tutorId),
+    tutorName: str(r.tutorName),
+    tutorEmail: str(r.tutorEmail),
     approvalStatus:
       r.approvalStatus === "approved" || r.approvalStatus === "rejected"
         ? r.approvalStatus

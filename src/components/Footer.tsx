@@ -6,16 +6,16 @@ import CopyrightYear from "./copyrightYear";
 
 const QUICK_LINKS = [
   { label: "Home", href: "/" },
-  { label: "Find Tutors", href: "/tutors" },
   { label: "Browse Tuitions", href: "/tuitions" },
-  { label: "About", href: "/about" },
-  { label: "Contact", href: "/contact" },
+  { label: "How It Works", href: "/#how-it-works" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "Contact", href: "mailto:mohammadroni0187@gmail.com" },
 ];
 
 const BOTTOM_LINKS = [
-  { label: "Privacy", href: "/privacy" },
-  { label: "Terms", href: "/terms" },
-  { label: "Tuitions", href: "/tuitions" },
+  { label: "Home", href: "/" },
+  { label: "Browse Tuitions", href: "/tuitions" },
+  { label: "Pricing", href: "/pricing" },
 ];
 
 // lucide-react-er notun version-e brand icon nai, tai inline SVG use korechi.
@@ -105,9 +105,15 @@ const Footer = () => {
           <ul className="mt-5 space-y-3">
             {QUICK_LINKS.map(({ label, href }) => (
               <li key={label}>
-                <Link href={href} className={linkClass}>
-                  {label}
-                </Link>
+                {href.startsWith("mailto:") ? (
+                  <a href={href} className={linkClass}>
+                    {label}
+                  </a>
+                ) : (
+                  <Link href={href} className={linkClass}>
+                    {label}
+                  </Link>
+                )}
               </li>
             ))}
           </ul>

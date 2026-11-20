@@ -12,6 +12,7 @@ import {
   Wallet,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import FeaturedTuitions from "@/components/FeaturedTuitions";
 
 const gradientBtn =
   "inline-flex items-center justify-center rounded-md bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-6 py-3 text-sm font-medium text-white shadow-md shadow-purple-500/30 transition-all hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 hover:shadow-lg";
@@ -112,7 +113,7 @@ export default function Home() {
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/tutors" className={gradientBtn}>
+            <Link href="/tuitions" className={gradientBtn}>
               Find a Tutor
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
@@ -175,6 +176,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Dynamic latest approved tuitions */}
+      <FeaturedTuitions />
+
       {/* How it works */}
       <section
         id="how-it-works"
@@ -207,6 +211,61 @@ export default function Home() {
               </li>
             ))}
           </ol>
+        </div>
+      </section>
+
+      {/* Popular subjects */}
+      <section className="mx-auto max-w-6xl px-4 py-10">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-3xl font-bold text-slate-900">
+            Explore popular subjects
+          </h2>
+          <p className="mt-3 text-slate-600">
+            From school subjects to exam preparation, find the right guidance.
+          </p>
+        </div>
+        <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {["Mathematics", "Physics", "Programming", "IELTS"].map((subject) => (
+            <Link
+              key={subject}
+              href="/tuitions"
+              className="rounded-2xl border border-white/60 bg-white/80 p-6 text-center font-semibold text-slate-800 shadow-sm backdrop-blur transition-all hover:-translate-y-0.5 hover:text-indigo-700 hover:shadow-lg hover:shadow-indigo-500/10"
+            >
+              {subject}
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Pricing teaser */}
+      <section className="mx-auto max-w-6xl px-4 py-10">
+        <div className="grid gap-5 md:grid-cols-2">
+          <div className="rounded-2xl border border-indigo-100 bg-white/80 p-6 shadow-sm">
+            <h3 className="text-lg font-bold text-slate-900">For tutors</h3>
+            <p className="mt-2 text-sm text-slate-600">
+              Start free with 2 posts, or upgrade to Pro for $15/month and post
+              unlimited tuitions.
+            </p>
+            <Link
+              href="/pricing"
+              className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:underline"
+            >
+              See tutor plans <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="rounded-2xl border border-purple-100 bg-white/80 p-6 shadow-sm">
+            <h3 className="text-lg font-bold text-slate-900">For students</h3>
+            <p className="mt-2 text-sm text-slate-600">
+              Browse and apply for free, or get Student Pro for $10/month with
+              priority booking.
+            </p>
+            <Link
+              href="/pricing"
+              className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-purple-600 hover:underline"
+            >
+              See student plans <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
       </section>
 

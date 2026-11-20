@@ -53,7 +53,7 @@ import {
 /* Styles & small config                                               */
 /* ------------------------------------------------------------------ */
 
-const POST_TUITION_ROUTE = "/dashboard/tutor/post-tuition";
+const POST_TUITION_ROUTE = "/dashboard/tutor/postTuition";
 
 const inputClass =
   "border-indigo-200 bg-white/70 focus-visible:border-indigo-500 focus-visible:ring-indigo-500/30";

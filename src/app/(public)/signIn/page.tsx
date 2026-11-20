@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -84,10 +85,14 @@ const SignInPage = () => {
 
       if (error) {
         setErrors({ form: error.message ?? "Login fail hoyeche" });
+        toast.error(error.message ?? "Sign in failed");
+        return;
       }
+      toast.success("Signed in successfully!");
     } catch (err) {
       console.error("Login Error:", err);
       setErrors({ form: "Kichu ekta vul hoyeche, abar try korun" });
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -98,7 +103,7 @@ const SignInPage = () => {
     try {
       const { error } = await signIn.social({
         provider: "google",
-        callbackURL: "http://localhost:3000/dashboard",
+        callbackURL: `${window.location.origin}/dashboard`,
       });
 
       if (error) {

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, ImagePlus, Link2, Loader2, Trash2, Upload } from "lucide-react";
+import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -162,6 +163,7 @@ const ProfileForm = ({ name, email, image, phone, bio, role }: ProfileFormProps)
 
       if (error) {
         setErrors({ form: error.message ?? "Profile update hoyni" });
+        toast.error(error.message ?? "Profile update failed");
         return;
       }
 
@@ -176,9 +178,11 @@ const ProfileForm = ({ name, email, image, phone, bio, role }: ProfileFormProps)
       setFile(null);
       if (fileRef.current) fileRef.current.value = "";
       setSaved(true);
+      toast.success("Profile updated successfully!");
     } catch (err) {
       console.error("Update Profile Error:", err);
       setErrors({ form: getErrorMessage(err) });
+      toast.error(getErrorMessage(err));
     } finally {
       setSaving(false);
     }
