@@ -23,6 +23,7 @@ import { ROUTES } from "@/lib/roles";
 import { TUITION_ENDPOINTS, extractTuitions, type Tuition } from "@/lib/tuition";
 import StatCard from "@/components/dashboard/stat-card/page";
 
+
 /* ------------------------------------------------------------------ */
 /* Config                                                              */
 /* ------------------------------------------------------------------ */
@@ -36,7 +37,11 @@ type Plan = "free" | "pro";
 
 const getPlan = (user: unknown): Plan => {
   const plan = (user as { plan?: unknown } | null | undefined)?.plan;
-  return typeof plan === "string" && plan.toLowerCase() === "pro" ? "pro" : "free";
+
+  return typeof plan === "string" &&
+    ["pro", "premium"].includes(plan.toLowerCase())
+    ? "pro"
+    : "free";
 };
 
 /** Response array, `{ data: [...] }` ba `{ total }` jai hok, count ber kore. */
@@ -88,6 +93,11 @@ const QUICK_LINKS: QuickLink[] = [
     accent: "bg-emerald-100 text-emerald-600",
   },
 ];
+
+
+
+
+
 
 /* ------------------------------------------------------------------ */
 /* Overview                                                            */
@@ -263,6 +273,7 @@ const TutorPage = () => {
           </Button>
         </header>
 
+        
         <TutorOverview plan={getPlan(user)} />
       </div>
     </main>

@@ -1,9 +1,19 @@
+
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CreditCard, FileText, Loader2, Search } from "lucide-react";
+import {
+  CreditCard,
+  FileText,
+  Loader2,
+  Search,
+  RefreshCw,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useRoleGuard } from "@/hooks/use-role-guard";
+import { apiFetch } from "@/lib/api";
+import StatCard from "@/components/dashboard/stat-card/page";
 
 type DashboardCard = {
   title: string;
@@ -24,7 +34,7 @@ const CARDS: DashboardCard[] = [
   {
     title: "My Applications",
     description: "Track your applications.",
-    href: "/dashboard/student/applications",
+    href: "/dashboard/student/my-applications",
     icon: FileText,
     accent: "bg-purple-100 text-purple-600",
   },
@@ -37,27 +47,68 @@ const CARDS: DashboardCard[] = [
   },
 ];
 
+type StudentStats = {
+  totalApplied?: number;
+  accepted?: number;
+  pending?: number;
+  currentPlan?: string;
+};
+
 const StudentPage = () => {
   const { user, isLoading, isAuthorized } = useRoleGuard("student");
 
-  
+  const [stats, setStats] = useState<StudentStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const loadStats = async () => {
+    try {
+      setStatsLoading(true);
+      setError("");
+
+      const response = await apiFetch<{
+        success?: boolean;
+        data?: StudentStats;
+        totalApplied?: number;
+        accepted?: number;
+        pending?: number;
+        currentPlan?: string;
+      }>("/api/applications/student/stats");
+
+      setStats(response.data ?? response);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Could not load dashboard stats."
+      );
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthorized && user) {
+      loadStats();
+    }
+  }, [isAuthorized, user]);
 
   if (isLoading || !isAuthorized || !user) {
     return (
-      <div
-        className="flex min-h-screen items-center justify-center"
-        role="status"
-        aria-live="polite"
-      >
+      <div className="flex min-h-screen items-center justify-center" role="status">
         <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
         <span className="sr-only">Loading...</span>
       </div>
     );
   }
 
+  const plan =
+    stats?.currentPlan?.toLowerCase() === "pro" ||
+    stats?.currentPlan?.toLowerCase() === "premium"
+      ? "Pro"
+      : "Free";
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-6 md:p-10">
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-6xl">
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-3xl font-bold text-transparent">
@@ -68,7 +119,53 @@ const StudentPage = () => {
             </p>
           </div>
 
+          <button
+            onClick={loadStats}
+            disabled={statsLoading}
+            className="inline-flex items-center rounded-lg border border-indigo-200 bg-white px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50 disabled:opacity-50"
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${statsLoading ? "animate-spin" : ""}`} />
+            Refresh
+          </button>
         </header>
+
+        <section className="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+          <StatCard
+            title="Total Applied Tuitions"
+            value={stats?.totalApplied ?? null}
+            icon={FileText}
+            accent="indigo"
+            loading={statsLoading}
+          />
+          <StatCard
+            title="Accepted Applications"
+            value={stats?.accepted ?? null}
+            icon={CreditCard}
+            accent="emerald"
+            loading={statsLoading}
+          />
+          <StatCard
+            title="Pending Applications"
+            value={stats?.pending ?? null}
+            icon={Search}
+            accent="pink"
+            loading={statsLoading}
+          />
+          <StatCard
+            title="Current Plan"
+            value={plan}
+            icon={CreditCard}
+            accent="purple"
+            loading={statsLoading}
+            hint="Your current account plan"
+          />
+        </section>
+
+        {error && (
+          <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+            {error}
+          </div>
+        )}
 
         <section className="mt-8 grid gap-5 md:grid-cols-3">
           {CARDS.map(({ title, description, href, icon: Icon, accent }) => (
@@ -77,9 +174,7 @@ const StudentPage = () => {
               href={href}
               className="group rounded-xl border border-white/60 bg-white/80 p-6 shadow-sm backdrop-blur transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             >
-              <div
-                className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg ${accent}`}
-              >
+              <div className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg ${accent}`}>
                 <Icon className="h-5 w-5" />
               </div>
               <h2 className="font-semibold text-slate-900 group-hover:text-indigo-700">
