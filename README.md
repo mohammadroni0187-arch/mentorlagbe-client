@@ -90,14 +90,17 @@ MentorLagbe connects students with verified tutors. Students search, filter and 
 
 ## Environment Variables (names only — no secret values)
 
-Create `.env.local` in this client repository:
+This repository does **not** ship an `.env.example`. Create `.env.local` manually in the project root with the two variables below and fill in your own local values (never commit the file):
 
 ```bash
-NEXT_PUBLIC_API_URL=      # Express API, e.g. http://localhost:5000 or https://mentorlagbe-server-jffj.vercel.app
-NEXT_PUBLIC_IMGBB_API_KEY= # ImgBB key for tutor banner upload
+NEXT_PUBLIC_API_URL=
+NEXT_PUBLIC_IMGBB_API_KEY=
 ```
 
-Authentication (BetterAuth, MongoDB, Google) is configured on the server, so database and Google secrets are not needed in the client. `NEXT_PUBLIC_API_URL` must point to the Express server (local default: `http://localhost:5000`).
+- `NEXT_PUBLIC_API_URL` — Express API base URL; use `http://localhost:5000` locally or `https://mentorlagbe-server-jffj.vercel.app` in production.
+- `NEXT_PUBLIC_IMGBB_API_KEY` — ImgBB key used for tutor banner uploads.
+
+Authentication (BetterAuth, MongoDB, Google) is configured on the server, so database and Google secrets are not needed in the client.
 
 ## Installation
 
@@ -105,7 +108,7 @@ Authentication (BetterAuth, MongoDB, Google) is configured on the server, so dat
 git clone https://github.com/mohammadroni0187-arch/mentorlagbe-client.git
 cd mentorlagbe-client
 npm install
-cp .env.example .env.local  # or create .env.local with the names above
+# Create .env.local manually with the two variables listed in the Environment Variables section
 npm run dev
 ```
 
@@ -139,6 +142,13 @@ The database contains accounts with these emails (passwords are hashed and are *
 
 No passwords are invented or published here.
 
+### Admin demo login (safe)
+
+- No demo password is published. Use an existing admin account (email above) with a password reset locally by the project owner, or sign up your own account and have an existing admin grant the admin role through `PATCH /api/admin/users/:id/role`.
+- Open `/signIn`, enter the admin email and that local password, then continue to `/dashboard/admin`.
+- Admin-only pages (`/dashboard/admin/*`) are protected by the client role guard and by server-side admin middleware.
+- Never commit a password, token, or `.env.local` file to the repository.
+
 ## Important npm Packages
 
-`next`, `react`, `react-dom`, `typescript`, `better-auth`, `@better-auth/mongo-adapter`, `mongodb`, `axios`, `react-hook-form`, `lucide-react`, `sonner`, `react-toastify`, `shadcn`, `tailwindcss`, `daisyui`, `tw-animate-css`, `@base-ui/react`, `eslint`.
+`next`, `react`, `react-dom`, `typescript`, `better-auth`, `mongodb`, `axios`, `react-hook-form`, `lucide-react`, `sonner`, `react-toastify`, `shadcn`, `tailwindcss`, `daisyui`, `tw-animate-css`, `@base-ui/react`, `eslint`.
