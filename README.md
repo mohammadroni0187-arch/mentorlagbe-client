@@ -7,7 +7,9 @@ Smart Tuition & Mentorship Platform — role-based frontend built with Next.js (
 MentorLagbe connects students with verified tutors. Students search, filter and apply to approved tuition batches; tutors post and manage tuitions and review applicants; admins moderate listings, manage roles and track payments. Both tutors and students can upgrade to a Stripe-powered Pro plan.
 
 - **Monorepo layout:** `mentorlagbe-client` (this repository) + `mentorlagbe-server` (Express/MongoDB API).
-- **Configured application URL:** `http://localhost:3000` (from `.env.local` / `.env`). No deployed live URL is configured in this repository.
+- **Live site:** https://mentorlagbe-client-one.vercel.app
+- **Live API:** https://mentorlagbe-server-jffj.vercel.app
+- **Local URL:** `http://localhost:3000`
 - **Client GitHub repository:** https://github.com/mohammadroni0187-arch/mentorlagbe-client.git
 - **Server GitHub repository:** https://github.com/mohammadroni0187-arch/mentorlagbe-server.git
 
@@ -91,18 +93,11 @@ MentorLagbe connects students with verified tutors. Students search, filter and 
 Create `.env.local` in this client repository:
 
 ```bash
-BETTER_AUTH_SECRET=
-BETTER_AUTH_URL=
-MONGO_URI=
-DB_NAME=
-GOOGLE_URI=
-GOOGLE_SECRET=
-NEXT_PUBLIC_IMGBB_API_KEY=
-NEXT_PUBLIC_API_URL=
-FRONTEND_URL=
+NEXT_PUBLIC_API_URL=      # Express API, e.g. http://localhost:5000 or https://mentorlagbe-server-jffj.vercel.app
+NEXT_PUBLIC_IMGBB_API_KEY= # ImgBB key for tutor banner upload
 ```
 
-`NEXT_PUBLIC_API_URL` must point to the Express server (local default: `http://localhost:5000`).
+Authentication (BetterAuth, MongoDB, Google) is configured on the server, so database and Google secrets are not needed in the client. `NEXT_PUBLIC_API_URL` must point to the Express server (local default: `http://localhost:5000`).
 
 ## Installation
 
@@ -114,7 +109,7 @@ cp .env.example .env.local  # or create .env.local with the names above
 npm run dev
 ```
 
-Open http://localhost:3000. The API server must be running alongside it (see the server README).
+Open http://localhost:3000. The API server must be running alongside it (see the server README). The deployed version is at https://mentorlagbe-client-one.vercel.app.
 
 ## Local Development Commands
 
@@ -132,7 +127,7 @@ npm run build
 npm start
 ```
 
-Deploy the client to a Node-capable host (e.g. Vercel). Configure every environment variable in the hosting dashboard. Set `NEXT_PUBLIC_API_URL` to the deployed API URL and update `FRONTEND_URL` on the server so CORS and Stripe redirects work in production.
+Deploy the client to a Node-capable host (e.g. Vercel). Configure every environment variable in the hosting dashboard. Set `NEXT_PUBLIC_API_URL` to `https://mentorlagbe-server-jffj.vercel.app` and set `FRONTEND_URL` to `https://mentorlagbe-client-one.vercel.app` on the server so CORS and Stripe redirects work in production.
 
 ## Testing Accounts
 
