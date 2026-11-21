@@ -51,6 +51,7 @@ const CARDS: DashboardCard[] = [
 
 type StudentStats = {
   totalApplied?: number;
+  activeApplications?: number;
   accepted?: number;
   pending?: number;
   currentPlan?: string;
@@ -161,11 +162,16 @@ const StudentPage = () => {
 
         <section className="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
-            title="Total Applied Tuitions"
+            title="Applications Used (Lifetime)"
             value={stats?.totalApplied ?? null}
             icon={FileText}
             accent="indigo"
             loading={statsLoading}
+            hint={
+              stats?.activeApplications !== undefined
+                ? `${stats.activeApplications} active right now`
+                : undefined
+            }
           />
           <StatCard
             title="Accepted Applications"
@@ -205,6 +211,35 @@ const StudentPage = () => {
         {error && (
           <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
             {error}
+          </div>
+        )}
+
+        {!statsLoading && plan === "Free" && (
+          <div
+            className={`mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4 text-sm ${
+              stats?.canApply === false
+                ? "border-red-200 bg-red-50 text-red-800"
+                : "border-indigo-200 bg-indigo-50 text-indigo-800"
+            }`}
+            role="status"
+          >
+            <p>
+              {stats?.canApply === false
+                ? "You have reached your free application limit. Cancelling or rejecting an application does not restore it."
+                : `${stats?.freeApplicationsUsed ?? 0} of ${
+                    stats?.freeApplicationLimit ?? 2
+                  } free applications used · ${
+                    stats?.remainingFreeApplications ?? 0
+                  } remaining`}
+            </p>
+            {stats?.canApply === false && (
+              <Link
+                href={ROUTES.pricing}
+                className="font-semibold underline hover:no-underline"
+              >
+                Upgrade to Pro
+              </Link>
+            )}
           </div>
         )}
 

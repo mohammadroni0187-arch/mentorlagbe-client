@@ -49,6 +49,20 @@ type ApplicationsResponse =
 const fetchApplications = (): Promise<ApplicationsResponse> =>
   apiFetch<ApplicationsResponse>("/api/applications/student");
 
+type QuotaStats = {
+  currentPlan?: string;
+  totalApplied?: number;
+  freeApplicationLimit?: number;
+  freeApplicationsUsed?: number;
+  remainingFreeApplications?: number | null;
+  canApply?: boolean;
+};
+
+type QuotaResponse = { success?: boolean; data?: QuotaStats } & QuotaStats;
+
+const fetchQuota = (): Promise<QuotaResponse> =>
+  apiFetch<QuotaResponse>("/api/applications/student/stats");
+
 const toApplicationList = (response: ApplicationsResponse): Application[] =>
   Array.isArray(response)
     ? response
@@ -60,6 +74,7 @@ const MyApplicationsPage = () => {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [cancelId, setCancelId] = useState<string | null>(null);
+  const [quota, setQuota] = useState<QuotaStats | null>(null);
 
   const applyApplications = useCallback((response: ApplicationsResponse) => {
     setApplications(toApplicationList(response));
@@ -102,6 +117,26 @@ const MyApplicationsPage = () => {
     };
   }, [applyApplications]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchQuota()
+      .then((response) => {
+        if (!cancelled) setQuota(response.data ?? response);
+      })
+      .catch(() => {
+        // Quota is informational; the applications list still renders.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const isFreePlan =
+    quota?.currentPlan?.toLowerCase() !== "pro" &&
+    quota?.currentPlan?.toLowerCase() !== "premium";
+
   const handleCancel = async (application: Application) => {
     const id = application._id || application.id;
 
@@ -125,6 +160,9 @@ const MyApplicationsPage = () => {
 
       toast.success("Application successfully cancelled.");
       await loadApplications();
+      // Lifetime usage is unchanged; refresh the banner to make that visible.
+      const refreshedQuota = await fetchQuota();
+      setQuota(refreshedQuota.data ?? refreshedQuota);
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Could not cancel the application."
@@ -174,6 +212,32 @@ const MyApplicationsPage = () => {
             Refresh
           </Button>
         </header>
+
+        {isFreePlan && quota && (
+          <div
+            className={`mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4 text-sm ${
+              quota.canApply === false
+                ? "border-red-200 bg-red-50 text-red-800"
+                : "border-indigo-200 bg-indigo-50 text-indigo-800"
+            }`}
+            role="status"
+          >
+            <p>
+              {quota.canApply === false
+                ? "You have reached your free application limit. Cancelling or rejecting an application does not restore it."
+                : `${quota.freeApplicationsUsed ?? 0} of ${
+                    quota.freeApplicationLimit ?? 2
+                  } free applications used · ${
+                    quota.remainingFreeApplications ?? 0
+                  } remaining`}
+            </p>
+            {quota.canApply === false && (
+              <Link href="/pricing" className="font-semibold underline hover:no-underline">
+                Upgrade to Pro
+              </Link>
+            )}
+          </div>
+        )}
 
         <section className="overflow-hidden rounded-xl border border-white/60 bg-white/90 shadow-sm">
           {loading ? (
