@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, Loader2, Upload, Camera } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Loader2, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -401,28 +401,51 @@ const ProfilePage = () => {
   } | null>(null);
   const [fetching, setFetching] = useState(true);
 
-  const fetchProfile = async () => {
+  const applyProfile = useCallback(
+    (res: {
+      success?: boolean;
+      data?: { phone?: string; bio?: string; image?: string; name?: string };
+    }) => {
+      if (res?.data) setProfileData(res.data);
+    },
+    []
+  );
+
+  const fetchProfile = useCallback(async () => {
+    setFetching(true);
     try {
-      setFetching(true);
-      const res = await apiFetch<{
-        success?: boolean;
-        data?: { phone?: string; bio?: string; image?: string; name?: string };
-      }>("/api/profile");
-      if (res?.data) {
-        setProfileData(res.data);
-      }
+      applyProfile(await apiFetch("/api/profile"));
     } catch {
-      // Ignore fallback to session user
+      // Fall back to session user data.
     } finally {
       setFetching(false);
     }
-  };
+  }, [applyProfile]);
 
   useEffect(() => {
-    if (user) {
-      fetchProfile();
-    }
-  }, [user]);
+    if (!user) return;
+
+    let cancelled = false;
+
+    apiFetch<{
+      success?: boolean;
+      data?: { phone?: string; bio?: string; image?: string; name?: string };
+    }>("/api/profile")
+      .then((res) => {
+        if (!cancelled) {
+          applyProfile(res);
+          setFetching(false);
+        }
+      })
+      .catch(() => {
+        // Fall back to session user data.
+        if (!cancelled) setFetching(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user, applyProfile]);
 
   if (isLoading || !user || fetching) {
     return (

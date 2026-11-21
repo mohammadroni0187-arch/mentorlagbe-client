@@ -23,29 +23,57 @@ type Tuition = {
   createdAt?: string;
 };
 
+type PendingTuitionsResponse = { data?: Tuition[] } | Tuition[];
+
+const fetchPendingTuitions = (): Promise<PendingTuitionsResponse> =>
+  apiFetch<PendingTuitionsResponse>("/api/admin/tuitions/pending");
+
 const AdminTuitionsPage = () => {
   const { user, isLoading, isAuthorized } = useRoleGuard("admin");
   const [tuitions, setTuitions] = useState<Tuition[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
 
+  const applyTuitions = useCallback((response: PendingTuitionsResponse) => {
+    setTuitions(Array.isArray(response) ? response : response.data ?? []);
+  }, []);
+
   const loadTuitions = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await apiFetch<{ data?: Tuition[] } | Tuition[]>(
-        "/api/admin/tuitions/pending"
-      );
-      setTuitions(Array.isArray(response) ? response : response.data ?? []);
+      applyTuitions(await fetchPendingTuitions());
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not load pending tuitions.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [applyTuitions]);
 
   useEffect(() => {
-    if (isAuthorized && user) loadTuitions();
-  }, [isAuthorized, user, loadTuitions]);
+    if (!isAuthorized || !user) return;
+
+    let cancelled = false;
+
+    fetchPendingTuitions()
+      .then((response) => {
+        if (!cancelled) {
+          applyTuitions(response);
+          setLoading(false);
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          toast.error(
+            error instanceof Error ? error.message : "Could not load pending tuitions."
+          );
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthorized, user, applyTuitions]);
 
   const updateStatus = async (id: string, status: "approved" | "rejected") => {
     try {

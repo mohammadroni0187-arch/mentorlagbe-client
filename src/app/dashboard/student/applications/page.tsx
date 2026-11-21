@@ -42,41 +42,80 @@ const getStatusStyle = (status?: string) => {
   }
 };
 
+type ApplicationsResponse =
+  | { success?: boolean; data?: Application[] }
+  | Application[];
+
+const fetchApplications = (): Promise<ApplicationsResponse> =>
+  apiFetch<ApplicationsResponse>("/api/applications/student");
+
+const toApplicationList = (response: ApplicationsResponse): Application[] =>
+  Array.isArray(response)
+    ? response
+    : Array.isArray(response.data)
+      ? response.data
+      : [];
+
 const MyApplicationsPage = () => {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [cancelId, setCancelId] = useState<string | null>(null);
 
+  const applyApplications = useCallback((response: ApplicationsResponse) => {
+    setApplications(toApplicationList(response));
+  }, []);
+
   const loadApplications = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-
-      const response = await apiFetch<{
-        success?: boolean;
-        data?: Application[];
-      } | Application[]>("/api/applications/student");
-
-      const list = Array.isArray(response)
-        ? response
-        : Array.isArray(response.data)
-          ? response.data
-          : [];
-
-      setApplications(list);
+      applyApplications(await fetchApplications());
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Applications load করা যায়নি।"
+        err instanceof Error ? err.message : "Could not load your applications."
       );
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [applyApplications]);
 
   useEffect(() => {
-    loadApplications();
-  }, [loadApplications]);
+    let cancelled = false;
 
-  const performCancel = async (id: string) => {
+    fetchApplications()
+      .then((response) => {
+        if (!cancelled) {
+          applyApplications(response);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          toast.error(
+            err instanceof Error ? err.message : "Could not load your applications."
+          );
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [applyApplications]);
+
+  const handleCancel = async (application: Application) => {
+    const id = application._id || application.id;
+
+    if (!id) {
+      toast.error("Application ID is unavailable.");
+      return;
+    }
+
+    if (application.status?.toLowerCase() !== "pending") return;
+
+    if (!window.confirm("Are you sure you want to cancel this tuition application?")) {
+      return;
+    }
+
     try {
       setCancelId(id);
 
@@ -88,27 +127,11 @@ const MyApplicationsPage = () => {
       await loadApplications();
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Application cancel করা যায়নি।"
+        err instanceof Error ? err.message : "Could not cancel the application."
       );
     } finally {
       setCancelId(null);
     }
-  };
-
-  const handleCancel = (application: Application) => {
-    const id = application._id || application.id;
-
-    if (!id) {
-      toast.error("Application ID পাওয়া যায়নি।");
-      return;
-    }
-
-    if (application.status?.toLowerCase() !== "pending") return;
-
-    toast("তুমি কি এই tuition application cancel করতে চাও?", {
-      action: { label: "Cancel application", onClick: () => void performCancel(id) },
-      cancel: { label: "Keep it", onClick: () => {} },
-    });
   };
 
   const formatDate = (date?: string) => {

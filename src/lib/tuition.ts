@@ -141,7 +141,7 @@ export function extractTuitions(res: unknown): Tuition[] {
 
 export const formatFee = (amount: number) => `৳${amount.toLocaleString("en-US")}`;
 
-export const getErrorMessage = (err: unknown, fallback = "Kichu ekta vul hoyeche, abar try korun") =>
+export const getErrorMessage = (err: unknown, fallback = "Something went wrong. Please try again.") =>
   err instanceof ApiError || err instanceof Error ? err.message : fallback;
 
 /* ------------------------------------------------------------------ */
@@ -155,30 +155,30 @@ export function validateTuition(form: TuitionFormValues): TuitionFormErrors {
   const fee = Number(form.monthlyFee);
   const days = Number(form.daysPerWeek);
 
-  if (title.length < 10) e.title = "Title kompokkhe 10 character hote hobe";
-  else if (title.length > 100) e.title = "Title 100 character-er beshi hobe na";
+  if (title.length < 10) e.title = "Title must be at least 10 characters.";
+  else if (title.length > 100) e.title = "Title cannot exceed 100 characters.";
 
-  if (form.subject.trim().length < 2) e.subject = "Subject dite hobe";
-  if (!form.classLevel) e.classLevel = "Class level select korun";
+  if (form.subject.trim().length < 2) e.subject = "Please enter a subject.";
+  if (!form.classLevel) e.classLevel = "Please select a class level.";
 
   if (form.mode !== "online" && form.location.trim().length < 3)
-    e.location = "Offline/Hybrid-er jonno location dite hobe";
+    e.location = "Please enter a location for offline or hybrid tuitions.";
 
-  if (!form.monthlyFee) e.monthlyFee = "Monthly fee dite hobe";
-  else if (!Number.isInteger(fee) || fee < 100) e.monthlyFee = "Fee kompokkhe 100 taka hote hobe";
+  if (!form.monthlyFee) e.monthlyFee = "Please enter a monthly fee.";
+  else if (!Number.isInteger(fee) || fee < 100) e.monthlyFee = "Monthly fee must be at least 100 taka.";
 
-  if (!Number.isInteger(days) || days < 1 || days > 7) e.daysPerWeek = "1 theke 7 din select korun";
+  if (!Number.isInteger(days) || days < 1 || days > 7) e.daysPerWeek = "Please select between 1 and 7 days per week.";
 
-  if (description.length < 30) e.description = "Description kompokkhe 30 character hote hobe";
-  else if (description.length > 1000) e.description = "Description 1000 character-er beshi hobe na";
+  if (description.length < 30) e.description = "Description must be at least 30 characters.";
+  else if (description.length > 1000) e.description = "Description cannot exceed 1000 characters.";
 
   return e;
 }
 
 /** Valid hole null, noile error message. */
 export function validateImageFile(file: File): string | null {
-  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) return "Shudhu JPG, PNG ba WEBP image dewa jabe";
-  if (file.size > MAX_IMAGE_SIZE) return "Image 5MB-er choto hote hobe";
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) return "Only JPG, PNG or WEBP images are allowed.";
+  if (file.size > MAX_IMAGE_SIZE) return "Image must be smaller than 5MB.";
   return null;
 }
 
@@ -188,7 +188,7 @@ export function validateImageFile(file: File): string | null {
 
 export async function uploadToImgBB(file: File): Promise<string> {
   const key = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
-  if (!key) throw new Error("ImgBB API key set kora nai (NEXT_PUBLIC_IMGBB_API_KEY).");
+  if (!key) throw new Error("Image upload is not configured. Please contact support.");
 
   const body = new FormData();
   body.append("image", file);
@@ -197,7 +197,7 @@ export async function uploadToImgBB(file: File): Promise<string> {
   try {
     res = await fetch(`https://api.imgbb.com/1/upload?key=${key}`, { method: "POST", body });
   } catch {
-    throw new Error("Image upload korte network error hoyeche.");
+    throw new Error("A network error occurred while uploading the image.");
   }
 
   const json = (await res.json().catch(() => null)) as {
@@ -208,7 +208,7 @@ export async function uploadToImgBB(file: File): Promise<string> {
 
   const url = json?.data?.display_url ?? json?.data?.url;
   if (!res.ok || !json?.success || !url) {
-    throw new Error(json?.error?.message ?? "Image upload fail hoyeche.");
+    throw new Error("Image upload failed. Please try again.");
   }
   return url;
 }

@@ -138,7 +138,7 @@ function extractApplications(res: unknown): Application[] {
 }
 
 const getErrorMessage = (err: unknown) =>
-  err instanceof ApiError || err instanceof Error ? err.message : "Kichu ekta vul hoyeche, abar try korun";
+  err instanceof ApiError || err instanceof Error ? err.message : "Something went wrong. Please try again.";
 
 const formatDate = (iso: string) => {
   const d = iso ? new Date(iso) : null;

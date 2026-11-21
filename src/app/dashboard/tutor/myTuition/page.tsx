@@ -693,7 +693,7 @@ const MyTuitionsContent = () => {
       })
       .catch((err) => {
         if (!cancelled) {
-          const message = getErrorMessage(err, "Tuition list load kora jayni");
+          const message = getErrorMessage(err, "Could not load your tuitions.");
           setLoadError(message);
           toast.error(message);
         }

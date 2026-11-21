@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   CreditCard,
@@ -60,6 +60,14 @@ type StudentStats = {
   canApply?: boolean;
 };
 
+type StudentStatsResponse = {
+  success?: boolean;
+  data?: StudentStats;
+} & StudentStats;
+
+const fetchStudentStats = (): Promise<StudentStatsResponse> =>
+  apiFetch<StudentStatsResponse>("/api/applications/student/stats");
+
 const StudentPage = () => {
   const { user, isLoading, isAuthorized } = useRoleGuard("student");
 
@@ -67,25 +75,15 @@ const StudentPage = () => {
   const [statsLoading, setStatsLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const loadStats = async () => {
+  const applyStats = useCallback((response: StudentStatsResponse) => {
+    setStats(response.data ?? response);
+  }, []);
+
+  const loadStats = useCallback(async () => {
+    setStatsLoading(true);
+    setError("");
     try {
-      setStatsLoading(true);
-      setError("");
-
-      const response = await apiFetch<{
-        success?: boolean;
-        data?: StudentStats;
-        totalApplied?: number;
-        accepted?: number;
-        pending?: number;
-        currentPlan?: string;
-        freeApplicationLimit?: number;
-        freeApplicationsUsed?: number;
-        remainingFreeApplications?: number | null;
-        canApply?: boolean;
-      }>("/api/applications/student/stats");
-
-      setStats(response.data ?? response);
+      applyStats(await fetchStudentStats());
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Could not load dashboard stats.";
@@ -94,13 +92,34 @@ const StudentPage = () => {
     } finally {
       setStatsLoading(false);
     }
-  };
+  }, [applyStats]);
 
   useEffect(() => {
-    if (isAuthorized && user) {
-      loadStats();
-    }
-  }, [isAuthorized, user]);
+    if (!isAuthorized || !user) return;
+
+    let cancelled = false;
+
+    fetchStudentStats()
+      .then((response) => {
+        if (!cancelled) {
+          applyStats(response);
+          setStatsLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          const message =
+            err instanceof Error ? err.message : "Could not load dashboard stats.";
+          setError(message);
+          toast.error(message);
+          setStatsLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthorized, user, applyStats]);
 
   if (isLoading || !isAuthorized || !user) {
     return (

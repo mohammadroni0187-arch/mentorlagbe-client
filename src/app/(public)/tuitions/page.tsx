@@ -117,7 +117,7 @@ const TuitionsBrowser = () => {
       })
       .catch((err) => {
         if (cancelled) return;
-        const message = getErrorMessage(err, "Tuition list load kora jayni");
+        const message = getErrorMessage(err, "Could not load tuitions.");
         setResult({
           key: queryKey,
           items: [],

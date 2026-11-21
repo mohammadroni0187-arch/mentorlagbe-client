@@ -21,24 +21,28 @@ type Transaction = {
   createdAt?: string;
 };
 
+type TransactionsResponse = { data?: Transaction[] } | Transaction[];
+
+const fetchTransactions = (): Promise<TransactionsResponse> =>
+  apiFetch<TransactionsResponse>("/api/admin/transactions");
+
 const AdminTransactionsPage = () => {
   const { user, isLoading, isAuthorized } = useRoleGuard("admin");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const applyTransactions = useCallback((response: TransactionsResponse) => {
+    setTransactions(
+      Array.isArray(response) ? response : response.data ?? []
+    );
+  }, []);
+
   const loadTransactions = useCallback(async () => {
+    setLoading(true);
+    setError("");
     try {
-      setLoading(true);
-      setError("");
-
-      const response = await apiFetch<
-        { data?: Transaction[] } | Transaction[]
-      >("/api/admin/transactions");
-
-      setTransactions(
-        Array.isArray(response) ? response : response.data ?? []
-      );
+      applyTransactions(await fetchTransactions());
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Could not load transactions.";
@@ -47,11 +51,34 @@ const AdminTransactionsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [applyTransactions]);
 
   useEffect(() => {
-    if (isAuthorized && user) loadTransactions();
-  }, [isAuthorized, user, loadTransactions]);
+    if (!isAuthorized || !user) return;
+
+    let cancelled = false;
+
+    fetchTransactions()
+      .then((response) => {
+        if (!cancelled) {
+          applyTransactions(response);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          const message =
+            err instanceof Error ? err.message : "Could not load transactions.";
+          setError(message);
+          toast.error(message);
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthorized, user, applyTransactions]);
 
   if (isLoading || !isAuthorized || !user) {
     return (

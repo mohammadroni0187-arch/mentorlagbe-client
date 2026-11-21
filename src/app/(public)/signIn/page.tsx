@@ -62,10 +62,10 @@ const SignInPage = () => {
   const validate = () => {
     const newErrors: FormErrors = {};
 
-    if (!form.email.trim()) newErrors.email = "Email dite hobe";
+    if (!form.email.trim()) newErrors.email = "Please enter your email.";
     else if (!/^\S+@\S+\.\S+$/.test(form.email))
-      newErrors.email = "Valid email din";
-    if (!form.password) newErrors.password = "Password dite hobe";
+      newErrors.email = "Please enter a valid email address.";
+    if (!form.password) newErrors.password = "Please enter your password.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -84,14 +84,14 @@ const SignInPage = () => {
       });
 
       if (error) {
-        setErrors({ form: error.message ?? "Login fail hoyeche" });
+        setErrors({ form: error.message ?? "Sign in failed. Please try again." });
         toast.error(error.message ?? "Sign in failed");
         return;
       }
       toast.success("Signed in successfully!");
     } catch (err) {
       console.error("Login Error:", err);
-      setErrors({ form: "Kichu ekta vul hoyeche, abar try korun" });
+      setErrors({ form: "Something went wrong. Please try again." });
       toast.error("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
@@ -107,7 +107,7 @@ const SignInPage = () => {
       });
 
       if (error) {
-        const message = error.message ?? "Google login fail hoyeche";
+        const message = error.message ?? "Google sign in failed. Please try again.";
         setErrors({ form: message });
         toast.error(message);
         setGoogleLoading(false);
@@ -117,7 +117,7 @@ const SignInPage = () => {
       // success hole browser Google-e redirect hobe, tai loading on thakbe
     } catch (err) {
       console.error("Google Login Error:", err);
-      const message = "Google login e somossa hoyeche, abar try korun";
+      const message = "Something went wrong with Google sign in. Please try again.";
       setErrors({ form: message });
       toast.error(message);
       setGoogleLoading(false);

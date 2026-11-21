@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -53,37 +53,66 @@ const adminLinks = [
   },
 ];
 
+type AdminStatsResponse = {
+  success?: boolean;
+  data?: AdminStats;
+  stats?: AdminStats;
+};
+
+const fetchAdminStats = (): Promise<AdminStatsResponse> =>
+  apiFetch<AdminStatsResponse>("/api/admin/stats");
+
 const AdminPage = () => {
   const { user, isLoading, isAuthorized } = useRoleGuard("admin");
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const loadStats = async () => {
+  const applyStats = useCallback((response: AdminStatsResponse) => {
+    setStats(response.data ?? response.stats ?? (response as unknown as AdminStats));
+  }, []);
+
+  const loadStats = useCallback(async () => {
+    setLoading(true);
+    setError("");
     try {
-      setLoading(true);
-      setError("");
-
-      const response = await apiFetch<{
-        success?: boolean;
-        data?: AdminStats;
-        stats?: AdminStats;
-      }>("/api/admin/stats");
-
-      setStats(response.data ?? response.stats ?? (response as unknown as AdminStats));
+      applyStats(await fetchAdminStats());
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Dashboard statistics load failed.";
+        err instanceof Error ? err.message : "Could not load dashboard statistics.";
       setError(message);
       toast.error(message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [applyStats]);
 
   useEffect(() => {
-    if (isAuthorized && user) loadStats();
-  }, [isAuthorized, user]);
+    if (!isAuthorized || !user) return;
+
+    let cancelled = false;
+
+    fetchAdminStats()
+      .then((response) => {
+        if (!cancelled) {
+          applyStats(response);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          const message =
+            err instanceof Error ? err.message : "Could not load dashboard statistics.";
+          setError(message);
+          toast.error(message);
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthorized, user, applyStats]);
 
   if (isLoading || !isAuthorized || !user) {
     return (

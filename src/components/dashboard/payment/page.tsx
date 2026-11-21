@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,25 @@ type SubscriptionInfo = {
   currentPeriodEnd?: number | string;
 };
 
+type PaymentDataResults = [
+  PromiseSettledResult<{ data?: PaymentItem[] }>,
+  PromiseSettledResult<{
+    subscription?: SubscriptionInfo | null;
+    data?: { subscription?: SubscriptionInfo | null };
+  }>,
+];
+
+// Pure fetch helper: data fetching stays outside the component's state updates
+// so the mount effect only subscribes to results through a promise callback.
+const fetchPaymentData = (): Promise<PaymentDataResults> =>
+  Promise.allSettled([
+    apiFetch<{ data?: PaymentItem[] }>("/api/payments/history"),
+    apiFetch<{
+      subscription?: SubscriptionInfo | null;
+      data?: { subscription?: SubscriptionInfo | null };
+    }>("/api/payments/subscription"),
+  ]) as Promise<PaymentDataResults>;
+
 const PaymentSection = ({ plan }: { plan: Plan }) => {
   const [loading, setLoading] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
@@ -32,36 +51,48 @@ const PaymentSection = ({ plan }: { plan: Plan }) => {
   const [subscription, setSubscription] =
     useState<SubscriptionInfo | null>(null);
 
+  const applyPaymentData = useCallback(
+    (results: PaymentDataResults) => {
+      const [history, subscriptionResult] = results;
+
+      if (history.status === "fulfilled") {
+        setPayments(
+          Array.isArray(history.value.data) ? history.value.data : []
+        );
+      }
+
+      if (subscriptionResult.status === "fulfilled") {
+        const result = subscriptionResult.value;
+        setSubscription(
+          result.subscription ?? result.data?.subscription ?? null
+        );
+      }
+
+      if (
+        history.status === "rejected" ||
+        subscriptionResult.status === "rejected"
+      ) {
+        toast.error("Could not load your payment details. Please try again.");
+      }
+    },
+    []
+  );
+
   const loadPaymentData = async () => {
-    const [history, subscriptionResult] = await Promise.allSettled([
-      apiFetch<{ data?: PaymentItem[] }>("/api/payments/history"),
-      apiFetch<{
-        subscription?: SubscriptionInfo | null;
-        data?: { subscription?: SubscriptionInfo | null };
-      }>("/api/payments/subscription"),
-    ]);
-
-    if (history.status === "fulfilled") {
-      setPayments(
-        Array.isArray(history.value.data) ? history.value.data : []
-      );
-    }
-
-    if (subscriptionResult.status === "fulfilled") {
-      const result = subscriptionResult.value;
-      setSubscription(
-        result.subscription ?? result.data?.subscription ?? null
-      );
-    }
-
-    if (history.status === "rejected" || subscriptionResult.status === "rejected") {
-      toast.error("Could not load your payment details. Please try again.");
-    }
+    applyPaymentData(await fetchPaymentData());
   };
 
   useEffect(() => {
-    loadPaymentData();
-  }, []);
+    let cancelled = false;
+
+    fetchPaymentData().then((results) => {
+      if (!cancelled) applyPaymentData(results);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [applyPaymentData]);
 
   const handleUpgrade = async () => {
     try {
@@ -76,7 +107,7 @@ const PaymentSection = ({ plan }: { plan: Plan }) => {
         toast.info("Redirecting to Stripe Checkout...");
         window.location.href = response.url;
       } else {
-        toast.error(response.message || "Checkout session তৈরি হয়নি।");
+        toast.error(response.message || "Could not create a checkout session.");
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Payment failed.");
@@ -85,7 +116,15 @@ const PaymentSection = ({ plan }: { plan: Plan }) => {
     }
   };
 
-  const performCancel = async () => {
+  const handleCancel = async () => {
+    if (
+      !window.confirm(
+        "Are you sure you want to cancel your subscription? Pro benefits stay active until the end of the billing period."
+      )
+    ) {
+      return;
+    }
+
     try {
       setCancelLoading(true);
 
@@ -97,18 +136,10 @@ const PaymentSection = ({ plan }: { plan: Plan }) => {
       toast.success(response.message || "Cancellation request sent.");
       await loadPaymentData();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Cancel করা যায়নি।");
+      toast.error(error instanceof Error ? error.message : "Could not cancel the subscription.");
     } finally {
       setCancelLoading(false);
     }
-  };
-
-  const handleCancel = () => {
-    toast("তুমি কি Subscription cancel করতে চাও?", {
-      description: "Pro benefits remain active until the end of the billing period.",
-      action: { label: "Cancel subscription", onClick: () => void performCancel() },
-      cancel: { label: "Keep Pro", onClick: () => {} },
-    });
   };
 
   const formatDate = (date?: string | number) => {

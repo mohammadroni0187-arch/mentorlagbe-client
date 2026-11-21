@@ -131,7 +131,7 @@ const extractCount = (res: unknown): number | null => {
 async function uploadToImgBB(file: File): Promise<string> {
   const key = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
   if (!key) {
-    throw new Error("ImgBB API key set kora nai (NEXT_PUBLIC_IMGBB_API_KEY).");
+    throw new Error("Image upload is not configured. Please contact support.");
   }
 
   const body = new FormData();
@@ -144,7 +144,7 @@ async function uploadToImgBB(file: File): Promise<string> {
       body,
     });
   } catch {
-    throw new Error("Image upload korte network error hoyeche.");
+    throw new Error("A network error occurred while uploading the image.");
   }
 
   const json = (await res.json().catch(() => null)) as {
@@ -155,7 +155,7 @@ async function uploadToImgBB(file: File): Promise<string> {
 
   const url = json?.data?.display_url ?? json?.data?.url;
   if (!res.ok || !json?.success || !url) {
-    throw new Error(json?.error?.message ?? "Image upload fail hoyeche.");
+    throw new Error("Image upload failed. Please try again.");
   }
   return url;
 }
@@ -359,11 +359,11 @@ const PostTuitionContent = ({ plan }: { plan: Plan }) => {
     if (!file) return;
 
     if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-      setErrors((prev) => ({ ...prev, banner: "Shudhu JPG, PNG ba WEBP image dewa jabe" }));
+      setErrors((prev) => ({ ...prev, banner: "Only JPG, PNG or WEBP images are allowed." }));
       return;
     }
     if (file.size > MAX_IMAGE_SIZE) {
-      setErrors((prev) => ({ ...prev, banner: "Image 5MB-er choto hote hobe" }));
+      setErrors((prev) => ({ ...prev, banner: "Image must be smaller than 5MB." }));
       return;
     }
 
@@ -383,26 +383,26 @@ const PostTuitionContent = ({ plan }: { plan: Plan }) => {
     const description = form.description.trim();
     const fee = Number(form.monthlyFee);
 
-    if (title.length < 10) e.title = "Title kompokkhe 10 character hote hobe";
-    else if (title.length > 100) e.title = "Title 100 character-er beshi hobe na";
+    if (title.length < 10) e.title = "Title must be at least 10 characters.";
+    else if (title.length > 100) e.title = "Title cannot exceed 100 characters.";
 
-    if (subject.length < 2) e.subject = "Subject dite hobe";
+    if (subject.length < 2) e.subject = "Please enter a subject.";
 
-    if (!form.classLevel) e.classLevel = "Class level select korun";
+    if (!form.classLevel) e.classLevel = "Please select a class level.";
 
     if (form.mode !== "online" && form.location.trim().length < 3)
-      e.location = "Offline/Hybrid-er jonno location dite hobe";
+      e.location = "Please enter a location for offline or hybrid tuitions.";
 
-    if (!form.monthlyFee) e.monthlyFee = "Monthly fee dite hobe";
-    else if (!Number.isInteger(fee) || fee < 100) e.monthlyFee = "Fee kompokkhe 100 taka hote hobe";
+    if (!form.monthlyFee) e.monthlyFee = "Please enter a monthly fee.";
+    else if (!Number.isInteger(fee) || fee < 100) e.monthlyFee = "Monthly fee must be at least 100 taka.";
 
     const days = Number(form.daysPerWeek);
-    if (!Number.isInteger(days) || days < 1 || days > 7) e.daysPerWeek = "1 theke 7 din select korun";
+    if (!Number.isInteger(days) || days < 1 || days > 7) e.daysPerWeek = "Please select between 1 and 7 days per week.";
 
-    if (description.length < 30) e.description = "Description kompokkhe 30 character hote hobe";
-    else if (description.length > 1000) e.description = "Description 1000 character-er beshi hobe na";
+    if (description.length < 30) e.description = "Description must be at least 30 characters.";
+    else if (description.length > 1000) e.description = "Description cannot exceed 1000 characters.";
 
-    if (!banner) e.banner = "Banner image upload korun";
+    if (!banner) e.banner = "Please upload a banner image.";
 
     return e;
   };
@@ -450,7 +450,7 @@ const PostTuitionContent = ({ plan }: { plan: Plan }) => {
       const message =
         err instanceof ApiError || err instanceof Error
           ? err.message
-          : "Kichu ekta vul hoyeche, abar try korun";
+          : "Something went wrong. Please try again.";
       setErrors({ form: message });
       toast.error(message);
     } finally {
@@ -519,10 +519,10 @@ const PostTuitionContent = ({ plan }: { plan: Plan }) => {
         >
           <Info className="mt-0.5 h-4 w-4 shrink-0" />
           <p>
-            Free plan-e maximum {FREE_POST_LIMIT}ta tuition post kora jay ar apni sheta shesh
-            korechen. Notun post korte{" "}
+            The Free plan allows a maximum of {FREE_POST_LIMIT} tuition posts, and you have
+            used them all. To create another post,{" "}
             <Link href={ROUTES.pricing} className="font-semibold underline">
-              Pro plan-e upgrade korun
+              upgrade to Pro
             </Link>
             .
           </p>

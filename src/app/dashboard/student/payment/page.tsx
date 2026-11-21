@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -31,6 +31,9 @@ type PaymentHistoryResponse = {
   data?: Payment[];
 };
 
+const fetchPaymentHistory = (): Promise<PaymentHistoryResponse> =>
+  apiFetch<PaymentHistoryResponse>("/api/payments/history");
+
 export default function StudentPaymentPage() {
   const router = useRouter();
 
@@ -41,29 +44,49 @@ export default function StudentPaymentPage() {
   >(null);
   const [error, setError] = useState("");
 
-  const loadPayments = async () => {
+  const applyPaymentHistory = useCallback((response: PaymentHistoryResponse) => {
+    setPayments(response.data || []);
+  }, []);
+
+  const loadPayments = useCallback(async () => {
+    setLoading(true);
+    setError("");
     try {
-      setLoading(true);
-      setError("");
-
-      const response = await apiFetch<PaymentHistoryResponse>(
-        "/api/payments/history"
-      );
-
-      setPayments(response.data || []);
+      applyPaymentHistory(await fetchPaymentHistory());
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Payment history load failed.";
+        err instanceof Error ? err.message : "Could not load payment history.";
       setError(message);
       toast.error(message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [applyPaymentHistory]);
 
   useEffect(() => {
-    loadPayments();
-  }, []);
+    let cancelled = false;
+
+    fetchPaymentHistory()
+      .then((response) => {
+        if (!cancelled) {
+          applyPaymentHistory(response);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          const message =
+            err instanceof Error ? err.message : "Could not load payment history.";
+          setError(message);
+          toast.error(message);
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [applyPaymentHistory]);
 
   const handleCheckout = async (
     interval: "monthly" | "yearly"
@@ -84,14 +107,14 @@ export default function StudentPaymentPage() {
       );
 
       if (!response.url) {
-        throw new Error("Stripe checkout URL পাওয়া যায়নি।");
+        throw new Error("Could not start checkout. Please try again.");
       }
 
       toast.info("Redirecting to Stripe Checkout...");
       window.location.assign(response.url);
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Checkout তৈরি করা যায়নি।";
+        err instanceof Error ? err.message : "Could not start checkout. Please try again.";
       setError(message);
       toast.error(message);
       setCheckoutLoading(null);

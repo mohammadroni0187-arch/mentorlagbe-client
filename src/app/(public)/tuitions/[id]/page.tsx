@@ -96,17 +96,17 @@ const ApplyForm = ({
     const phone = form.phone.replace(/[\s-]/g, "");
 
     if (schedule.length < 3) {
-      e.preferredSchedule = "Preferred schedule dite hobe";
+      e.preferredSchedule = "Please enter your preferred schedule.";
     } else if (schedule.length > 100) {
-      e.preferredSchedule = "Schedule 100 character-er beshi hobe na";
+      e.preferredSchedule = "Schedule cannot exceed 100 characters.";
     }
 
     if (phone && !/^\+?\d{10,15}$/.test(phone)) {
-      e.phone = "Valid phone number din";
+      e.phone = "Please enter a valid phone number.";
     }
 
     if (form.note.length > NOTE_MAX) {
-      e.note = `Note ${NOTE_MAX} character-er beshi hobe na`;
+      e.note = `Note cannot exceed ${NOTE_MAX} characters.`;
     }
 
     setErrors(e);
@@ -493,7 +493,7 @@ const InfoItem = ({
   </div>
 );
 
-/* useParams আলাদা component-এ রাখা হয়েছে */
+/* useParams is kept in a separate component */
 const TuitionDetailsContent = () => {
   const { id } = useParams<{ id: string }>();
 
@@ -526,7 +526,7 @@ const TuitionDetailsContent = () => {
         setState({
           key,
           tuition: null,
-          error: getErrorMessage(err, "Tuition load kora jayni"),
+          error: getErrorMessage(err, "Could not load tuition details."),
           notFound:
             err instanceof ApiError &&
             (err.status === 404 || err.status === 400),

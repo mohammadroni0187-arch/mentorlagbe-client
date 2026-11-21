@@ -78,14 +78,14 @@ const SignUpPage = () => {
   const validate = () => {
     const newErrors: FormErrors = {};
 
-    if (!form.name.trim()) newErrors.name = "Name dite hobe";
-    if (!form.email.trim()) newErrors.email = "Email dite hobe";
+    if (!form.name.trim()) newErrors.name = "Please enter your name.";
+    if (!form.email.trim()) newErrors.email = "Please enter your email.";
     else if (!/^\S+@\S+\.\S+$/.test(form.email))
-      newErrors.email = "Valid email din";
+      newErrors.email = "Please enter a valid email address.";
     if (form.password.length < 8)
-      newErrors.password = "Password kompokkhe 8 character hote hobe";
+      newErrors.password = "Password must be at least 8 characters.";
     if (form.confirmPassword !== form.password)
-      newErrors.confirmPassword = "Password mile nai";
+      newErrors.confirmPassword = "Passwords do not match.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -106,7 +106,7 @@ const SignUpPage = () => {
       });
 
       if (error) {
-        setErrors({ form: error.message ?? "Sign up fail hoyeche" });
+        setErrors({ form: error.message ?? "Registration failed. Please try again." });
         toast.error(error.message ?? "Registration failed");
         return;
       }
@@ -115,7 +115,7 @@ const SignUpPage = () => {
       router.push("/dashboard");
     } catch (err) {
       console.error("Signup Error:", err);
-      setErrors({ form: "Kichu ekta vul hoyeche, abar try korun" });
+      setErrors({ form: "Something went wrong. Please try again." });
       toast.error("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
@@ -131,7 +131,7 @@ const SignUpPage = () => {
       });
 
       if (error) {
-        const message = error.message ?? "Google sign up fail hoyeche";
+        const message = error.message ?? "Google sign up failed. Please try again.";
         setErrors({ form: message });
         toast.error(message);
         setGoogleLoading(false);
@@ -141,7 +141,7 @@ const SignUpPage = () => {
       // success hole browser Google-e redirect hobe, tai loading on thakbe
     } catch (err) {
       console.error("Google Signup Error:", err);
-      const message = "Google sign up e somossa hoyeche, abar try korun";
+      const message = "Something went wrong with Google sign up. Please try again.";
       setErrors({ form: message });
       toast.error(message);
       setGoogleLoading(false);

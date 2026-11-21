@@ -3,7 +3,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Loader2, RefreshCw, ShieldCheck, Users } from "lucide-react";
+import { ArrowLeft, Loader2, RefreshCw, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useRoleGuard } from "@/hooks/use-role-guard";
 import { apiFetch } from "@/lib/api";
@@ -17,29 +17,57 @@ type AdminUser = {
   createdAt?: string;
 };
 
+type AdminUsersResponse = { data?: AdminUser[] } | AdminUser[];
+
+const fetchAdminUsers = (): Promise<AdminUsersResponse> =>
+  apiFetch<AdminUsersResponse>("/api/admin/users");
+
 const UserManagementPage = () => {
   const { user, isLoading, isAuthorized } = useRoleGuard("admin");
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
 
+  const applyUsers = useCallback((response: AdminUsersResponse) => {
+    setUsers(Array.isArray(response) ? response : response.data ?? []);
+  }, []);
+
   const loadUsers = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await apiFetch<{ data?: AdminUser[] } | AdminUser[]>(
-        "/api/admin/users"
-      );
-      setUsers(Array.isArray(response) ? response : response.data ?? []);
+      applyUsers(await fetchAdminUsers());
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not load users.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [applyUsers]);
 
   useEffect(() => {
-    if (isAuthorized && user) loadUsers();
-  }, [isAuthorized, user, loadUsers]);
+    if (!isAuthorized || !user) return;
+
+    let cancelled = false;
+
+    fetchAdminUsers()
+      .then((response) => {
+        if (!cancelled) {
+          applyUsers(response);
+          setLoading(false);
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          toast.error(
+            error instanceof Error ? error.message : "Could not load users."
+          );
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthorized, user, applyUsers]);
 
   const changeRole = async (id: string, role: string) => {
     try {

@@ -124,16 +124,16 @@ const ProfileForm = ({ name, email, image, phone, bio, role }: ProfileFormProps)
     const e: FormErrors = {};
     const phoneValue = form.phone.replace(/[\s-]/g, "");
 
-    if (form.name.trim().length < 2) e.name = "Name kompokkhe 2 character hote hobe";
-    else if (form.name.trim().length > 60) e.name = "Name 60 character-er beshi hobe na";
+    if (form.name.trim().length < 2) e.name = "Name must be at least 2 characters.";
+    else if (form.name.trim().length > 60) e.name = "Name cannot exceed 60 characters.";
 
     if (phoneValue && !/^\+?\d{10,15}$/.test(phoneValue))
-      e.phone = "Valid phone number din (jemon 01712345678 ba +8801712345678)";
+      e.phone = "Enter a valid phone number (for example, 01712345678 or +8801712345678).";
 
-    if (form.bio.length > BIO_MAX) e.bio = `Bio ${BIO_MAX} character-er beshi hobe na`;
+    if (form.bio.length > BIO_MAX) e.bio = `Bio cannot exceed ${BIO_MAX} characters.`;
 
     if (!file && imageUrl.trim() && !isValidUrl(imageUrl.trim()))
-      e.image = "Valid image URL din (https://...)";
+      e.image = "Please enter a valid image URL (https://...).";
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -162,7 +162,7 @@ const ProfileForm = ({ name, email, image, phone, bio, role }: ProfileFormProps)
       );
 
       if (error) {
-        setErrors({ form: error.message ?? "Profile update hoyni" });
+        setErrors({ form: error.message ?? "Could not update your profile." });
         toast.error(error.message ?? "Profile update failed");
         return;
       }
@@ -328,7 +328,7 @@ const ProfileForm = ({ name, email, image, phone, bio, role }: ProfileFormProps)
 
             {imageMode === "url" && file && (
               <p className="text-xs text-slate-500">
-                Ekta image upload-er jonno select kora ache. URL use korte hole age oita remove korun.
+                An image is selected for upload. Remove it first if you want to use a URL instead.
               </p>
             )}
 
@@ -374,7 +374,7 @@ const ProfileForm = ({ name, email, image, phone, bio, role }: ProfileFormProps)
               Email
             </Label>
             <Input id="email" value={email} disabled readOnly className={inputClass} />
-            <p className="text-xs text-slate-500">Email change kora jay na.</p>
+            <p className="text-xs text-slate-500">Your email address cannot be changed.</p>
           </div>
 
           {/* Phone */}
