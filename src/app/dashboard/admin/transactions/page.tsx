@@ -26,8 +26,26 @@ type TransactionsResponse = { data?: Transaction[] } | Transaction[];
 const fetchTransactions = (): Promise<TransactionsResponse> =>
   apiFetch<TransactionsResponse>("/api/admin/transactions");
 
+// Stripe amounts are stored in the currency of the checkout session (USD here).
+// Always use the record's own currency code and Intl for locale-correct output.
+const currencyCode = (value?: string): string => {
+  const code = (value || "USD").trim().toUpperCase();
+  return /^[A-Z]{3}$/.test(code) ? code : "USD";
+};
+
+const formatMoney = (amount: number, currency?: string): string => {
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currencyCode(currency),
+    }).format(Number.isFinite(amount) ? amount : 0);
+  } catch {
+    return `$${(Number.isFinite(amount) ? amount : 0).toFixed(2)}`;
+  }
+};
+
 const AdminTransactionsPage = () => {
-  const { user, isLoading, isAuthorized } = useRoleGuard("admin");
+  const { user, isLoading } = useRoleGuard("admin");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -54,7 +72,10 @@ const AdminTransactionsPage = () => {
   }, [applyTransactions]);
 
   useEffect(() => {
-    if (!isAuthorized || !user) return;
+    // The API enforces admin access. Waiting for the client-side role guard as
+    // well can leave this page stuck in a loading state when a session role is
+    // stale or not yet hydrated, so fetch as soon as the session is resolved.
+    if (isLoading || !user) return;
 
     let cancelled = false;
 
@@ -78,9 +99,9 @@ const AdminTransactionsPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [isAuthorized, user, applyTransactions]);
+  }, [isLoading, user, applyTransactions]);
 
-  if (isLoading || !isAuthorized || !user) {
+  if (isLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Loader2 className="h-7 w-7 animate-spin text-indigo-600" />
@@ -88,9 +109,25 @@ const AdminTransactionsPage = () => {
     );
   }
 
-  const totalRevenue = transactions
-    .filter((item) => item.paymentStatus === "paid")
-    .reduce((sum, item) => sum + (item.amount || 0), 0);
+  const paidTransactions = transactions.filter(
+    (item) => item.paymentStatus?.toLowerCase() === "paid"
+  );
+
+  // Keep totals per currency so records with different currencies are never
+  // added together under a single, wrong symbol.
+  const totalsByCurrency = paidTransactions.reduce<Record<string, number>>(
+    (totals, item) => {
+      const code = currencyCode(item.currency);
+      totals[code] = (totals[code] || 0) + (Number(item.amount) || 0);
+      return totals;
+    },
+    {}
+  );
+
+  const revenueLabels =
+    Object.entries(totalsByCurrency)
+      .map(([code, amount]) => formatMoney(amount, code))
+      .join(" · ") || formatMoney(0, "USD");
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-100 via-emerald-50 to-indigo-100 p-4 md:p-8">
@@ -115,14 +152,14 @@ const AdminTransactionsPage = () => {
             <p className="mt-2 text-3xl font-bold">
               {loading
                 ? "..."
-                : transactions.filter((item) => item.paymentStatus === "paid").length}
+                : paidTransactions.length}
             </p>
           </div>
 
           <div className="rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-700 p-6 text-white shadow-lg">
             <p className="text-sm text-indigo-100">Revenue (Returned Records)</p>
             <p className="mt-2 text-3xl font-bold">
-              {loading ? "..." : `$ ${totalRevenue.toLocaleString("en-USD")}`}
+              {loading ? "..." : revenueLabels}
             </p>
           </div>
         </div>
@@ -186,8 +223,7 @@ const AdminTransactionsPage = () => {
                       <td className="p-4 capitalize">{item.role || "N/A"}</td>
                       <td className="p-4">{item.planName || "Premium"}</td>
                       <td className="p-4 font-semibold text-slate-800">
-                        {(item.currency || "usd").toUpperCase()}{" "}
-                        {item.amount ?? 0}
+                        {formatMoney(Number(item.amount) || 0, item.currency)}
                       </td>
                       <td className="max-w-48 truncate p-4 font-mono text-xs text-slate-500">
                         {item.sessionId || "N/A"}

@@ -155,7 +155,10 @@ const AdminPage = () => {
       title: "Total Revenue",
       value:
         stats?.totalRevenue !== undefined
-          ? `৳${stats.totalRevenue.toLocaleString("en-BD")}`
+          ? new Intl.NumberFormat("en-US", {
+              style: "currency",
+              currency: "USD",
+            }).format(stats.totalRevenue)
           : undefined,
       icon: Wallet,
       gradient: "from-pink-500 to-rose-600",
