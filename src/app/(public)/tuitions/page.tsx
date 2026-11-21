@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { RefreshCw, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ import {
   type Mode,
   type Tuition,
 } from "@/lib/tuition";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const PAGE_SIZE = 9;
 
@@ -68,10 +68,12 @@ const SkeletonCard = () => (
   </div>
 );
 
-const TuitionsPage = () => {
+const TuitionsBrowser = () => {
   const router = useRouter();
-  const [searchInput, setSearchInput] = useState("");
-  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+  // Home-er hero search (/tuitions?search=physics) theke asha value
+  const initialSearch = useSearchParams().get("search")?.trim() ?? "";
+  const [searchInput, setSearchInput] = useState(initialSearch);
+  const [filters, setFilters] = useState<Filters>({ ...DEFAULT_FILTERS, search: initialSearch });
   const [page, setPage] = useState(1);
   const [reloadKey, setReloadKey] = useState(0);
   const [result, setResult] = useState<Result | null>(null);
@@ -318,5 +320,12 @@ const TuitionsPage = () => {
     </main>
   );
 };
+
+// useSearchParams-er jonno Suspense boundary lage
+const TuitionsPage = () => (
+  <Suspense fallback={<div className="min-h-screen" />}>
+    <TuitionsBrowser />
+  </Suspense>
+);
 
 export default TuitionsPage;

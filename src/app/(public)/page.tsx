@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import {
   ArrowRight,
@@ -7,18 +6,13 @@ import {
   CheckCircle2,
   MessageSquare,
   Search,
-  ShieldCheck,
   Users,
   Wallet,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import FeaturedTuitions from "@/components/FeaturedTuitions";
-
-const gradientBtn =
-  "inline-flex items-center justify-center rounded-md bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-6 py-3 text-sm font-medium text-white shadow-md shadow-purple-500/30 transition-all hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 hover:shadow-lg";
-
-const outlineBtn =
-  "inline-flex items-center justify-center rounded-md border border-indigo-200 bg-white/70 px-6 py-3 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-50";
+import HeroBanner from "@/components/home/HeroBanner";
+import AboutSection from "@/components/home/AboutSection";
 
 const STATS = [
   { value: "500+", label: "Verified tutors" },
@@ -86,44 +80,7 @@ const STEPS = [
 export default function Home() {
   return (
     <>
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -top-24 left-1/2 h-72 w-[40rem] -translate-x-1/2 rounded-full bg-gradient-to-r from-indigo-300/40 via-purple-300/40 to-pink-300/40 blur-3xl"
-        />
-
-        <div className="relative mx-auto max-w-6xl px-4 py-20 text-center md:py-28">
-          <span className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white/70 px-3 py-1 text-xs font-medium text-indigo-700">
-            <ShieldCheck className="h-3.5 w-3.5" />
-            Trusted by students and tutors
-          </span>
-
-          <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold tracking-tight text-slate-900 md:text-6xl">
-            Find the{" "}
-            <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-              perfect tutor
-            </span>{" "}
-            for your goals
-          </h1>
-
-          <p className="mx-auto mt-5 max-w-xl text-base text-slate-600 md:text-lg">
-            Connect with experienced, verified tutors across every subject.
-            Learn at your own pace, on your own schedule.
-          </p>
-
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/tuitions" className={gradientBtn}>
-              Find a Tutor
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-
-            <Link href="/signUp" className={outlineBtn}>
-              Become a Tutor
-            </Link>
-          </div>
-        </div>
-      </section>
+      <HeroBanner />
 
       {/* Stats */}
       <section className="mx-auto max-w-6xl px-4">
@@ -141,6 +98,8 @@ export default function Home() {
           ))}
         </dl>
       </section>
+
+      <AboutSection />
 
       {/* Features */}
       <section className="mx-auto max-w-6xl px-4 py-20">
