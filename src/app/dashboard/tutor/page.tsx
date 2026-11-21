@@ -15,6 +15,7 @@ import {
   Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
@@ -123,6 +124,10 @@ const TutorOverview = ({ plan }: { plan: Plan }) => {
       setTuitions(tuitionsResult.status === "fulfilled" ? extractTuitions(tuitionsResult.value) : null);
       setApplicants(applicantsResult.status === "fulfilled" ? countFrom(applicantsResult.value) : null);
       setLoading(false);
+
+      if (tuitionsResult.status === "rejected" || applicantsResult.status === "rejected") {
+        toast.error("Some dashboard statistics could not be loaded.");
+      }
     });
 
     return () => {
@@ -238,6 +243,7 @@ const TutorPage = () => {
 
   const handleSignOut = async () => {
     await authClient.signOut();
+    toast.success("You have been signed out successfully.");
     router.replace(ROUTES.signIn);
   };
 

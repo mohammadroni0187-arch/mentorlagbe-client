@@ -11,8 +11,10 @@ import {
   RefreshCw,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { toast } from "sonner";
 import { useRoleGuard } from "@/hooks/use-role-guard";
 import { apiFetch } from "@/lib/api";
+import { ROUTES } from "@/lib/roles";
 import StatCard from "@/components/dashboard/stat-card/page";
 
 type DashboardCard = {
@@ -52,6 +54,10 @@ type StudentStats = {
   accepted?: number;
   pending?: number;
   currentPlan?: string;
+  freeApplicationLimit?: number;
+  freeApplicationsUsed?: number;
+  remainingFreeApplications?: number | null;
+  canApply?: boolean;
 };
 
 const StudentPage = () => {
@@ -73,13 +79,18 @@ const StudentPage = () => {
         accepted?: number;
         pending?: number;
         currentPlan?: string;
+        freeApplicationLimit?: number;
+        freeApplicationsUsed?: number;
+        remainingFreeApplications?: number | null;
+        canApply?: boolean;
       }>("/api/applications/student/stats");
 
       setStats(response.data ?? response);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Could not load dashboard stats."
-      );
+      const message =
+        err instanceof Error ? err.message : "Could not load dashboard stats.";
+      setError(message);
+      toast.error(message);
     } finally {
       setStatsLoading(false);
     }
@@ -157,7 +168,18 @@ const StudentPage = () => {
             icon={CreditCard}
             accent="purple"
             loading={statsLoading}
-            hint="Your current account plan"
+            hint={
+              plan === "Free"
+                ? `${stats?.remainingFreeApplications ?? "—"} of ${
+                    stats?.freeApplicationLimit ?? 2
+                  } free applications remaining`
+                : "Unlimited applications on Pro"
+            }
+            action={
+              plan === "Free"
+                ? { label: "Upgrade to Pro", href: ROUTES.pricing }
+                : undefined
+            }
           />
         </section>
 

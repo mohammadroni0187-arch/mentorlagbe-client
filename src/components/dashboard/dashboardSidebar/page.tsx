@@ -19,6 +19,7 @@ import {
   Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { toast } from "sonner";
 import {
   Sidebar,
   SidebarContent,
@@ -179,6 +180,7 @@ export function DashboardSidebar() {
 
   const handleSignOut = async () => {
     await authClient.signOut();
+    toast.success("You have been signed out successfully.");
     router.replace(ROUTES.home);
     router.refresh();
   };

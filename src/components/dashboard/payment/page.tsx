@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Crown, Loader2, RefreshCw } from "lucide-react";
@@ -27,7 +28,6 @@ type SubscriptionInfo = {
 const PaymentSection = ({ plan }: { plan: Plan }) => {
   const [loading, setLoading] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
-  const [message, setMessage] = useState("");
   const [payments, setPayments] = useState<PaymentItem[]>([]);
   const [subscription, setSubscription] =
     useState<SubscriptionInfo | null>(null);
@@ -53,6 +53,10 @@ const PaymentSection = ({ plan }: { plan: Plan }) => {
         result.subscription ?? result.data?.subscription ?? null
       );
     }
+
+    if (history.status === "rejected" || subscriptionResult.status === "rejected") {
+      toast.error("Could not load your payment details. Please try again.");
+    }
   };
 
   useEffect(() => {
@@ -62,7 +66,6 @@ const PaymentSection = ({ plan }: { plan: Plan }) => {
   const handleUpgrade = async () => {
     try {
       setLoading(true);
-      setMessage("");
 
       const response = await apiFetch<{ url?: string; message?: string }>(
         "/api/payments/create-checkout-session",
@@ -70,40 +73,42 @@ const PaymentSection = ({ plan }: { plan: Plan }) => {
       );
 
       if (response.url) {
+        toast.info("Redirecting to Stripe Checkout...");
         window.location.href = response.url;
       } else {
-        setMessage(response.message || "Checkout session তৈরি হয়নি।");
+        toast.error(response.message || "Checkout session তৈরি হয়নি।");
       }
     } catch (error) {
-      setMessage(
-        error instanceof Error ? error.message : "Payment failed."
-      );
+      toast.error(error instanceof Error ? error.message : "Payment failed.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCancel = async () => {
-    if (!window.confirm("তুমি কি Subscription cancel করতে চাও?")) return;
-
+  const performCancel = async () => {
     try {
       setCancelLoading(true);
-      setMessage("");
 
       const response = await apiFetch<{ message?: string }>(
         "/api/payments/cancel-subscription",
         { method: "POST", body: {} }
       );
 
-      setMessage(response.message || "Cancellation request sent.");
+      toast.success(response.message || "Cancellation request sent.");
       await loadPaymentData();
     } catch (error) {
-      setMessage(
-        error instanceof Error ? error.message : "Cancel করা যায়নি।"
-      );
+      toast.error(error instanceof Error ? error.message : "Cancel করা যায়নি।");
     } finally {
       setCancelLoading(false);
     }
+  };
+
+  const handleCancel = () => {
+    toast("তুমি কি Subscription cancel করতে চাও?", {
+      description: "Pro benefits remain active until the end of the billing period.",
+      action: { label: "Cancel subscription", onClick: () => void performCancel() },
+      cancel: { label: "Keep Pro", onClick: () => {} },
+    });
   };
 
   const formatDate = (date?: string | number) => {
@@ -227,11 +232,6 @@ const PaymentSection = ({ plan }: { plan: Plan }) => {
         )}
       </div>
 
-      {message && (
-        <p className="rounded-lg bg-indigo-50 p-3 text-sm text-indigo-700">
-          {message}
-        </p>
-      )}
     </section>
   );
 };

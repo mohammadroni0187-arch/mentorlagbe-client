@@ -12,6 +12,7 @@ import {
   UserCog,
   X,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   NavigationMenu,
@@ -107,6 +108,7 @@ const Navbar = () => {
   const handleSignOut = async () => {
     closeMenu();
     await authClient.signOut();
+    toast.success("You have been signed out successfully.");
     router.replace(ROUTES.home);
     router.refresh();
   };

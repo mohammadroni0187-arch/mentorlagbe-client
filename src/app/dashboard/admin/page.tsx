@@ -17,6 +17,7 @@ import {
   ClipboardList,
   CreditCard,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useRoleGuard } from "@/hooks/use-role-guard";
 import { apiFetch } from "@/lib/api";
 
@@ -71,9 +72,10 @@ const AdminPage = () => {
 
       setStats(response.data ?? response.stats ?? (response as unknown as AdminStats));
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Dashboard statistics load failed."
-      );
+      const message =
+        err instanceof Error ? err.message : "Dashboard statistics load failed.";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

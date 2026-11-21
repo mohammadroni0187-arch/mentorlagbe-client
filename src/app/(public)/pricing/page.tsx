@@ -248,6 +248,7 @@ export default function Pricing() {
       );
 
       if (response.url) {
+        toast.info("Redirecting to Stripe Checkout...");
         window.location.assign(response.url);
       } else {
         toast.error("Checkout URL not received. Please try again.");

@@ -131,13 +131,19 @@ const SignUpPage = () => {
       });
 
       if (error) {
-        setErrors({ form: error.message ?? "Google sign up fail hoyeche" });
+        const message = error.message ?? "Google sign up fail hoyeche";
+        setErrors({ form: message });
+        toast.error(message);
         setGoogleLoading(false);
+        return;
       }
+      toast.info("Redirecting to Google...");
       // success hole browser Google-e redirect hobe, tai loading on thakbe
     } catch (err) {
       console.error("Google Signup Error:", err);
-      setErrors({ form: "Google sign up e somossa hoyeche, abar try korun" });
+      const message = "Google sign up e somossa hoyeche, abar try korun";
+      setErrors({ form: message });
+      toast.error(message);
       setGoogleLoading(false);
     }
   };

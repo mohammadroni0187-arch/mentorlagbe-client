@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import { buttonVariants } from "@/components/ui/button";
 
 const gradientBtn =
@@ -15,11 +16,12 @@ export default function ErrorPage({
   error: unknown;
   retry: () => void;
 }) {
+  const message = "Something went wrong. Please try again.";
+
   useEffect(() => {
     console.error(error);
+    toast.error(message);
   }, [error]);
-
-  const message = error instanceof Error ? error.message : "Something went wrong.";
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-pink-50 px-4 text-center">

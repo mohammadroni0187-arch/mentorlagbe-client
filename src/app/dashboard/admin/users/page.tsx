@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Loader2, RefreshCw, ShieldCheck, Users } from "lucide-react";
+import { toast } from "sonner";
 import { useRoleGuard } from "@/hooks/use-role-guard";
 import { apiFetch } from "@/lib/api";
 
@@ -21,7 +22,6 @@ const UserManagementPage = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
-  const [message, setMessage] = useState("");
 
   const loadUsers = useCallback(async () => {
     try {
@@ -31,7 +31,7 @@ const UserManagementPage = () => {
       );
       setUsers(Array.isArray(response) ? response : response.data ?? []);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Users load failed.");
+      toast.error(error instanceof Error ? error.message : "Could not load users.");
     } finally {
       setLoading(false);
     }
@@ -44,7 +44,6 @@ const UserManagementPage = () => {
   const changeRole = async (id: string, role: string) => {
     try {
       setUpdating(id);
-      setMessage("");
 
       await apiFetch(`/api/admin/users/${id}/role`, {
         method: "PATCH",
@@ -54,9 +53,9 @@ const UserManagementPage = () => {
       setUsers((current) =>
         current.map((item) => item._id === id ? { ...item, role } : item)
       );
-      setMessage("User role updated successfully.");
+      toast.success("User role updated successfully.");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Role update failed.");
+      toast.error(error instanceof Error ? error.message : "Could not update user role.");
     } finally {
       setUpdating(null);
     }
@@ -92,8 +91,6 @@ const UserManagementPage = () => {
               <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh
             </button>
           </div>
-
-          {message && <p className="m-4 rounded-lg bg-indigo-50 p-3 text-sm text-indigo-700">{message}</p>}
 
           {loading ? (
             <div className="flex justify-center p-12"><Loader2 className="h-7 w-7 animate-spin text-indigo-600" /></div>

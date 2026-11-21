@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, CreditCard, Loader2, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import { useRoleGuard } from "@/hooks/use-role-guard";
 import { apiFetch } from "@/lib/api";
 
@@ -39,9 +40,10 @@ const AdminTransactionsPage = () => {
         Array.isArray(response) ? response : response.data ?? []
       );
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Transactions load failed."
-      );
+      const message =
+        err instanceof Error ? err.message : "Could not load transactions.";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

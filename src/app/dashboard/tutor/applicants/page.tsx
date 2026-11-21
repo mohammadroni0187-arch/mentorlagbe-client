@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   Clock,
   Inbox,
-  Info,
   Loader2,
   Mail,
   MessageSquare,
@@ -21,6 +20,7 @@ import {
   XCircle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiFetch, ApiError } from "@/lib/api";
@@ -52,7 +52,6 @@ type Application = {
 };
 
 type Filter = "all" | ApplicationStatus;
-type Notice = { type: "success" | "error"; text: string };
 
 const STATUS_STYLES: Record<ApplicationStatus, { label: string; className: string; icon: LucideIcon }> = {
   pending: { label: "Pending", className: "bg-amber-100 text-amber-700", icon: Clock },
@@ -339,7 +338,6 @@ const ApplicantsContent = () => {
   const [tuitionFilter, setTuitionFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [notice, setNotice] = useState<Notice | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -351,7 +349,11 @@ const ApplicantsContent = () => {
         setLoadError(null);
       })
       .catch((err) => {
-        if (!cancelled) setLoadError(getErrorMessage(err));
+        if (!cancelled) {
+          const message = getErrorMessage(err);
+          setLoadError(message);
+          toast.error(message);
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -362,9 +364,9 @@ const ApplicantsContent = () => {
     };
   }, [reloadKey]);
 
-  const notify = (type: Notice["type"], text: string) => {
-    setNotice({ type, text });
-    setTimeout(() => setNotice(null), 4000);
+  const notify = (type: "success" | "error", text: string) => {
+    if (type === "success") toast.success(text);
+    else toast.error(text);
   };
 
   const retry = () => {
@@ -474,25 +476,6 @@ setReloadKey((key) => key + 1);
           </select>
         </div>
       </div>
-
-      {/* Notice */}
-      {notice && (
-        <p
-          role="status"
-          className={`mt-4 flex items-center gap-2 rounded-lg border p-3 text-sm ${
-            notice.type === "success"
-              ? "border-green-200 bg-green-50 text-green-700"
-              : "border-red-200 bg-red-50 text-red-700"
-          }`}
-        >
-          {notice.type === "success" ? (
-            <CheckCircle2 className="h-4 w-4 shrink-0" />
-          ) : (
-            <Info className="h-4 w-4 shrink-0" />
-          )}
-          {notice.text}
-        </p>
-      )}
 
       {/* Body */}
       <div className="mt-6">

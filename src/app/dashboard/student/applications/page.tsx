@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Loader2, RefreshCw, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
 
@@ -45,13 +46,10 @@ const MyApplicationsPage = () => {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [cancelId, setCancelId] = useState<string | null>(null);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const loadApplications = useCallback(async () => {
     try {
       setLoading(true);
-      setError("");
 
       const response = await apiFetch<{
         success?: boolean;
@@ -66,10 +64,8 @@ const MyApplicationsPage = () => {
 
       setApplications(list);
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Applications load করা যায়নি।"
+      toast.error(
+        err instanceof Error ? err.message : "Applications load করা যায়নি।"
       );
     } finally {
       setLoading(false);
@@ -80,42 +76,39 @@ const MyApplicationsPage = () => {
     loadApplications();
   }, [loadApplications]);
 
-  const handleCancel = async (application: Application) => {
-    const id = application._id || application.id;
-
-    if (!id) {
-      setError("Application ID পাওয়া যায়নি।");
-      return;
-    }
-
-    if (application.status?.toLowerCase() !== "pending") return;
-
-    const confirmed = window.confirm(
-      "তুমি কি এই tuition application cancel করতে চাও?"
-    );
-
-    if (!confirmed) return;
-
+  const performCancel = async (id: string) => {
     try {
       setCancelId(id);
-      setError("");
-      setSuccess("");
 
       await apiFetch(`/api/applications/${id}`, {
         method: "DELETE",
       });
 
-      setSuccess("Application successfully cancelled.");
+      toast.success("Application successfully cancelled.");
       await loadApplications();
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Application cancel করা যায়নি।"
+      toast.error(
+        err instanceof Error ? err.message : "Application cancel করা যায়নি।"
       );
     } finally {
       setCancelId(null);
     }
+  };
+
+  const handleCancel = (application: Application) => {
+    const id = application._id || application.id;
+
+    if (!id) {
+      toast.error("Application ID পাওয়া যায়নি।");
+      return;
+    }
+
+    if (application.status?.toLowerCase() !== "pending") return;
+
+    toast("তুমি কি এই tuition application cancel করতে চাও?", {
+      action: { label: "Cancel application", onClick: () => void performCancel(id) },
+      cancel: { label: "Keep it", onClick: () => {} },
+    });
   };
 
   const formatDate = (date?: string) => {
@@ -158,18 +151,6 @@ const MyApplicationsPage = () => {
             Refresh
           </Button>
         </header>
-
-        {error && (
-          <div className="mb-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
-            {success}
-          </div>
-        )}
 
         <section className="overflow-hidden rounded-xl border border-white/60 bg-white/90 shadow-sm">
           {loading ? (

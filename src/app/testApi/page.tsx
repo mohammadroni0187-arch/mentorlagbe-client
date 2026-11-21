@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { apiFetch, ApiError } from "@/lib/api";
 
@@ -19,12 +20,16 @@ const TestApiPage = () => {
     try {
       const data = await apiFetch("/api/admin/tutor-test");
       setResult({ status: "success", data });
+      toast.success("API request succeeded.");
     } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Something went wrong";
       setResult({
         status: "error",
-        message: err instanceof Error ? err.message : "Something went wrong",
+        message,
         code: err instanceof ApiError ? err.status : undefined,
       });
+      toast.error(message);
     } finally {
       setLoading(false);
     }

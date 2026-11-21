@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Check, Loader2, RefreshCw, X } from "lucide-react";
+import { toast } from "sonner";
 import { useRoleGuard } from "@/hooks/use-role-guard";
 import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,6 @@ const AdminTuitionsPage = () => {
   const [tuitions, setTuitions] = useState<Tuition[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
-  const [message, setMessage] = useState("");
 
   const loadTuitions = useCallback(async () => {
     try {
@@ -37,7 +37,7 @@ const AdminTuitionsPage = () => {
       );
       setTuitions(Array.isArray(response) ? response : response.data ?? []);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Tuitions load failed.");
+      toast.error(error instanceof Error ? error.message : "Could not load pending tuitions.");
     } finally {
       setLoading(false);
     }
@@ -50,7 +50,6 @@ const AdminTuitionsPage = () => {
   const updateStatus = async (id: string, status: "approved" | "rejected") => {
     try {
       setProcessing(id);
-      setMessage("");
 
       await apiFetch(`/api/admin/tuitions/${id}/status`, {
         method: "PATCH",
@@ -58,9 +57,9 @@ const AdminTuitionsPage = () => {
       });
 
       setTuitions((current) => current.filter((item) => item._id !== id));
-      setMessage(`Tuition ${status} successfully.`);
+      toast.success(`Tuition ${status} successfully.`);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Status update failed.");
+      toast.error(error instanceof Error ? error.message : "Could not update tuition status.");
     } finally {
       setProcessing(null);
     }
@@ -91,8 +90,6 @@ const AdminTuitionsPage = () => {
               <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh
             </button>
           </div>
-
-          {message && <p className="rounded-lg bg-indigo-50 p-3 text-sm text-indigo-700">{message}</p>}
 
           {loading ? (
             <div className="flex justify-center rounded-xl bg-white p-12"><Loader2 className="h-7 w-7 animate-spin text-indigo-600" /></div>

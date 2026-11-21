@@ -65,10 +65,12 @@ const ApplyForm = ({
   tuitionId,
   defaultPhone,
   onApplied,
+  onLimitReached,
 }: {
   tuitionId: string;
   defaultPhone: string;
   onApplied: () => void;
+  onLimitReached: (message: string) => void;
 }) => {
   const [form, setForm] = useState({
     preferredSchedule: "",
@@ -138,8 +140,22 @@ const ApplyForm = ({
         return;
       }
 
-      setErrors({ form: getErrorMessage(err) });
-      toast.error(getErrorMessage(err));
+      const message = getErrorMessage(err);
+
+      if (
+        err instanceof ApiError &&
+        err.status === 403 &&
+        (err.data as { code?: string } | undefined)?.code ===
+          "FREE_APPLICATION_LIMIT"
+      ) {
+        setErrors({ form: message });
+        toast.error(message);
+        onLimitReached(message);
+        return;
+      }
+
+      setErrors({ form: message });
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }
@@ -245,7 +261,17 @@ const ApplyForm = ({
   );
 };
 
-type AppliedState = "checking" | "applied" | "open";
+type AppliedState = "checking" | "applied" | "open" | "limit";
+
+type StudentQuota = {
+  currentPlan?: string;
+  canApply?: boolean;
+  remainingFreeApplications?: number | null;
+  freeApplicationLimit?: number;
+};
+
+const isProPlan = (plan?: string) =>
+  plan?.toLowerCase() === "pro" || plan?.toLowerCase() === "premium";
 
 const StudentApply = ({
   tuitionId,
@@ -255,15 +281,21 @@ const StudentApply = ({
   phone: string;
 }) => {
   const [state, setState] = useState<AppliedState>("checking");
+  const [limitMessage, setLimitMessage] = useState("");
 
   useEffect(() => {
     let cancelled = false;
 
-    apiFetch<{ data?: unknown }>("/api/applications/student")
-      .then((res) => {
+    Promise.all([
+      apiFetch<{ data?: unknown }>("/api/applications/student"),
+      apiFetch<{ data?: StudentQuota } & StudentQuota>(
+        "/api/applications/student/stats"
+      ),
+    ])
+      .then(([listRes, statsRes]) => {
         if (cancelled) return;
 
-        const list = Array.isArray(res.data) ? res.data : [];
+        const list = Array.isArray(listRes.data) ? listRes.data : [];
 
         const already = list.some(
           (a) =>
@@ -272,9 +304,25 @@ const StudentApply = ({
             String((a as { tuitionId?: unknown }).tuitionId) === tuitionId
         );
 
-        setState(already ? "applied" : "open");
+        if (already) {
+          setState("applied");
+          return;
+        }
+
+        const quota = statsRes.data ?? statsRes;
+
+        if (!isProPlan(quota.currentPlan) && quota.canApply === false) {
+          setLimitMessage(
+            "You have reached your free application limit. Upgrade to Pro to submit more applications."
+          );
+          setState("limit");
+          return;
+        }
+
+        setState("open");
       })
       .catch(() => {
+        // The server remains the authority; let the form render and enforce it.
         if (!cancelled) setState("open");
       });
 
@@ -321,11 +369,35 @@ const StudentApply = ({
     );
   }
 
+  if (state === "limit") {
+    return (
+      <div
+        className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"
+        role="status"
+      >
+        <p className="font-semibold">Free application limit reached</p>
+        <p className="mt-1 text-amber-800">
+          {limitMessage}
+        </p>
+        <Link
+          href={ROUTES.pricing}
+          className={`${buttonVariants({ size: "sm" })} mt-3 ${gradientBtn}`}
+        >
+          Upgrade to Pro
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <ApplyForm
       tuitionId={tuitionId}
       defaultPhone={phone}
       onApplied={() => setState("applied")}
+      onLimitReached={(message) => {
+        setLimitMessage(message);
+        setState("limit");
+      }}
     />
   );
 };

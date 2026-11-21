@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { RefreshCw, Search, X } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Pagination from "@/components/Pagination";
@@ -116,13 +117,15 @@ const TuitionsBrowser = () => {
       })
       .catch((err) => {
         if (cancelled) return;
+        const message = getErrorMessage(err, "Tuition list load kora jayni");
         setResult({
           key: queryKey,
           items: [],
           total: 0,
           totalPages: 1,
-          error: getErrorMessage(err, "Tuition list load kora jayni"),
+          error: message,
         });
+        toast.error(message);
       });
 
     return () => {

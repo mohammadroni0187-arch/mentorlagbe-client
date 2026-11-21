@@ -24,6 +24,7 @@ import {
   XCircle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -88,7 +89,6 @@ const FILTERS: { value: Filter; label: string }[] = [
   { value: "rejected", label: "Rejected" },
 ];
 
-type Notice = { type: "success" | "error"; text: string };
 
 /* ------------------------------------------------------------------ */
 /* Generic modal                                                       */
@@ -266,7 +266,9 @@ const EditTuitionModal = ({
       await apiFetch(TUITION_ENDPOINTS.update(tuition.id), { method: "PATCH", body: fields });
       onSaved(tuition.id, fields);
     } catch (err) {
-      setErrors({ form: getErrorMessage(err) });
+      const message = getErrorMessage(err);
+      setErrors({ form: message });
+      toast.error(message);
     } finally {
       setSaving(false);
     }
@@ -674,7 +676,6 @@ const MyTuitionsContent = () => {
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [notice, setNotice] = useState<Notice | null>(null);
 
   const [editing, setEditing] = useState<Tuition | null>(null);
   const [deleting, setDeleting] = useState<Tuition | null>(null);
@@ -691,7 +692,11 @@ const MyTuitionsContent = () => {
         setLoadError(null);
       })
       .catch((err) => {
-        if (!cancelled) setLoadError(getErrorMessage(err, "Tuition list load kora jayni"));
+        if (!cancelled) {
+          const message = getErrorMessage(err, "Tuition list load kora jayni");
+          setLoadError(message);
+          toast.error(message);
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -702,9 +707,9 @@ const MyTuitionsContent = () => {
     };
   }, [reloadKey]);
 
-  const notify = (type: Notice["type"], text: string) => {
-    setNotice({ type, text });
-    setTimeout(() => setNotice(null), 4000);
+  const notify = (type: "success" | "error", text: string) => {
+    if (type === "success") toast.success(text);
+    else toast.error(text);
   };
 
   const retry = () => {
@@ -817,25 +822,6 @@ const MyTuitionsContent = () => {
           />
         </div>
       </div>
-
-      {/* Notice */}
-      {notice && (
-        <p
-          role="status"
-          className={`mt-4 flex items-center gap-2 rounded-lg border p-3 text-sm ${
-            notice.type === "success"
-              ? "border-green-200 bg-green-50 text-green-700"
-              : "border-red-200 bg-red-50 text-red-700"
-          }`}
-        >
-          {notice.type === "success" ? (
-            <CheckCircle2 className="h-4 w-4 shrink-0" />
-          ) : (
-            <Info className="h-4 w-4 shrink-0" />
-          )}
-          {notice.text}
-        </p>
-      )}
 
       {/* Body */}
       <div className="mt-6">
