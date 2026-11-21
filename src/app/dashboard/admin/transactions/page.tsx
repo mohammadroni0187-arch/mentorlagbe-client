@@ -122,7 +122,7 @@ const AdminTransactionsPage = () => {
           <div className="rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-700 p-6 text-white shadow-lg">
             <p className="text-sm text-indigo-100">Revenue (Returned Records)</p>
             <p className="mt-2 text-3xl font-bold">
-              {loading ? "..." : `৳${totalRevenue.toLocaleString("en-BD")}`}
+              {loading ? "..." : `$${totalRevenue.toLocaleString("en-USD")}`}
             </p>
           </div>
         </div>
