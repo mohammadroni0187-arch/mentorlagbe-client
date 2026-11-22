@@ -25,6 +25,11 @@ type FormErrors = Partial<
 const inputClass =
   "h-11 border-indigo-200 bg-white/70 focus-visible:border-indigo-500 focus-visible:ring-indigo-500/30 md:h-8 dark:border-indigo-900 dark:bg-slate-900/60";
 
+// Google OAuth must start on the API host: BetterAuth sets the OAuth `state`
+// cookie there, and Google's registered callback is on that same host.
+const SOCIAL_AUTH_BASE_URL =
+  `${(process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000").replace(/\/$/, "")}/api/auth`;
+
 const GoogleIcon = () => (
   <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
     <path
@@ -128,6 +133,7 @@ const SignUpPage = () => {
       const { error } = await signIn.social({
         provider: "google",
         callbackURL: `${window.location.origin}/dashboard`,
+        fetchOptions: { baseURL: SOCIAL_AUTH_BASE_URL },
       });
 
       if (error) {
