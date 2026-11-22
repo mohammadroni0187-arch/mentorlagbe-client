@@ -85,7 +85,6 @@ const SignInPage = () => {
       const { error } = await signIn.email({
         email: form.email,
         password: form.password,
-        callbackURL: "/dashboard",
       });
 
       if (error) {
@@ -94,6 +93,10 @@ const SignInPage = () => {
         return;
       }
       toast.success("Signed in successfully!");
+      // Navigate explicitly instead of relying on Better Auth's implicit
+      // callbackURL redirect. A full-page load makes the dashboard re-read
+      // the session from the first-party cookie created by the auth proxy.
+      window.location.assign(new URL("/dashboard", window.location.origin).href);
     } catch (err) {
       console.error("Login Error:", err);
       setErrors({ form: "Something went wrong. Please try again." });
