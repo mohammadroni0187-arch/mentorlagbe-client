@@ -23,7 +23,7 @@ type FormErrors = Partial<
 >;
 
 const inputClass =
-  "border-indigo-200 bg-white/70 focus-visible:border-indigo-500 focus-visible:ring-indigo-500/30 dark:border-indigo-900 dark:bg-slate-900/60";
+  "h-11 border-indigo-200 bg-white/70 focus-visible:border-indigo-500 focus-visible:ring-indigo-500/30 md:h-8 dark:border-indigo-900 dark:bg-slate-900/60";
 
 const GoogleIcon = () => (
   <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
@@ -149,13 +149,13 @@ const SignUpPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 p-4 dark:from-slate-950 dark:via-indigo-950 dark:to-purple-950">
+    <div className="flex min-h-dvh items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 p-4 dark:from-slate-950 dark:via-indigo-950 dark:to-purple-950">
       <Card className="w-full max-w-md overflow-hidden border-0 bg-white/80 shadow-xl shadow-indigo-500/10 backdrop-blur dark:bg-slate-900/80">
         {/* colored top accent bar */}
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
 
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-2xl font-bold text-transparent">
+          <CardTitle className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-xl font-bold text-transparent sm:text-2xl">
             Create an account
           </CardTitle>
           <CardDescription>Enter your details below to get started</CardDescription>
@@ -173,7 +173,7 @@ const SignUpPage = () => {
                   type="button"
                   onClick={() => setForm((prev) => ({ ...prev, role: "student" }))}
                   disabled={busy}
-                  className={`flex items-center justify-center gap-2 rounded-lg border p-3 text-sm font-medium transition-all ${
+                  className={`flex items-center justify-center gap-2 min-h-11 rounded-lg border p-3 text-sm font-medium transition-all ${
                     form.role === "student"
                       ? "border-indigo-600 bg-indigo-50/80 text-indigo-700 shadow-sm ring-1 ring-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300"
                       : "border-indigo-200 bg-white/70 text-slate-600 hover:border-indigo-300 hover:bg-indigo-50/40 dark:border-indigo-900 dark:bg-slate-900/60 dark:text-slate-400"
@@ -186,7 +186,7 @@ const SignUpPage = () => {
                   type="button"
                   onClick={() => setForm((prev) => ({ ...prev, role: "tutor" }))}
                   disabled={busy}
-                  className={`flex items-center justify-center gap-2 rounded-lg border p-3 text-sm font-medium transition-all ${
+                  className={`flex items-center justify-center gap-2 min-h-11 rounded-lg border p-3 text-sm font-medium transition-all ${
                     form.role === "tutor"
                       ? "border-purple-600 bg-purple-50/80 text-purple-700 shadow-sm ring-1 ring-purple-600 dark:bg-purple-950/50 dark:text-purple-300"
                       : "border-indigo-200 bg-white/70 text-slate-600 hover:border-purple-300 hover:bg-purple-50/40 dark:border-indigo-900 dark:bg-slate-900/60 dark:text-slate-400"
@@ -250,12 +250,12 @@ const SignUpPage = () => {
                   onChange={handleChange}
                   aria-invalid={!!errors.password}
                   disabled={busy}
-                  className={`${inputClass} pr-10`}
+                  className={`${inputClass} pr-12 md:pr-10`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((s) => !s)}
-                  className="absolute inset-y-0 right-3 flex items-center text-indigo-400 transition-colors hover:text-indigo-600"
+                  className="absolute inset-y-0 right-1 flex w-11 items-center justify-center text-indigo-400 transition-colors hover:text-indigo-600 md:right-3 md:w-8"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -279,12 +279,12 @@ const SignUpPage = () => {
                   onChange={handleChange}
                   aria-invalid={!!errors.confirmPassword}
                   disabled={busy}
-                  className={`${inputClass} pr-10`}
+                  className={`${inputClass} pr-12 md:pr-10`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirm((s) => !s)}
-                  className="absolute inset-y-0 right-3 flex items-center text-indigo-400 transition-colors hover:text-indigo-600"
+                  className="absolute inset-y-0 right-1 flex w-11 items-center justify-center text-indigo-400 transition-colors hover:text-indigo-600 md:right-3 md:w-8"
                   aria-label={showConfirm ? "Hide password" : "Show password"}
                 >
                   {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -306,7 +306,7 @@ const SignUpPage = () => {
             <Button
               type="submit"
               disabled={busy}
-              className="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-md shadow-purple-500/30 transition-all hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 hover:shadow-lg"
+              className="h-11 w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-md shadow-purple-500/30 transition-all hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 hover:shadow-lg md:h-8"
             >
               {loading ? (
                 <>
@@ -329,7 +329,7 @@ const SignUpPage = () => {
               variant="outline"
               onClick={handleGoogle}
               disabled={busy}
-              className="w-full border-indigo-200 hover:bg-indigo-50 dark:border-indigo-900 dark:hover:bg-indigo-950"
+              className="h-11 w-full border-indigo-200 hover:bg-indigo-50 md:h-8 dark:border-indigo-900 dark:hover:bg-indigo-950"
             >
               {googleLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

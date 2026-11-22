@@ -262,7 +262,7 @@ const Navbar = () => {
 
       {/* Mobile panel */}
       {open && (
-        <div className="max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-indigo-100 bg-white lg:hidden">
+        <div className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-indigo-100 bg-white lg:hidden">
           <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-4" aria-label="Mobile">
             {NAV_LINKS.map(({ label, href }) => (
               <Link

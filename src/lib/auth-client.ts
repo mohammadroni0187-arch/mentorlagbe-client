@@ -6,9 +6,9 @@ import {
 import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
-  baseURL:
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000",
-
+  // No absolute baseURL: Better Auth falls back to the current origin + /api/auth.
+  // /api/auth/* is proxied to the Express API by next.config.ts, so the session
+  // cookie is stored as a first-party cookie (required by mobile browsers).
   plugins: [
     inferAdditionalFields({
       user: {

@@ -9,7 +9,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <SidebarInset className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
         {/* Mobile-e eta diye sidebar khola jay */}
         <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-indigo-100 bg-white/70 px-4 backdrop-blur">
-          <SidebarTrigger className="text-slate-600 hover:bg-indigo-50 hover:text-indigo-700" />
+          <SidebarTrigger className="h-11 w-11 text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 md:h-8 md:w-8" />
           <span className="text-sm font-medium text-slate-700">Dashboard</span>
         </header>
 
